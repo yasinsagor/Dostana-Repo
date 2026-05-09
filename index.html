@@ -5,1272 +5,482 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#B71C1C">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Doatana">
-<title>Doatana Kebab Manager</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<title>Doatana Manager</title>
 <style>
-:root {
-  --bg: #0C0C0C;
-  --card: #181818;
-  --card2: #222222;
-  --primary: #C62828;
-  --primary-d: #8E0000;
-  --accent: #FF6D00;
-  --green: #1B5E20;
-  --green-l: #43A047;
-  --red: #C62828;
-  --red-l: #EF5350;
-  --yellow: #F9A825;
-  --text: #F5F5F5;
-  --dim: #757575;
-  --border: #2C2C2C;
-  --r: 18px;
-  --r-sm: 10px;
-}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow-x:hidden;}
-body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;}
-
-/* ── PAGES ── */
-.page{display:none;min-height:100vh;animation:fadeIn .25s ease;}
-.page.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-/* ── SPLASH ── */
-#pg-splash{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;
-  background:radial-gradient(ellipse at 60% 20%, #3a0000 0%, #0C0C0C 70%);
-}
-.splash-logo{
-  width:100px;height:100px;background:var(--primary);border-radius:28px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Bebas Neue';font-size:48px;color:#fff;
-  box-shadow:0 0 60px rgba(198,40,40,0.5);
-  margin-bottom:20px;
-  animation:pulse 2s infinite;
-}
-@keyframes pulse{0%,100%{box-shadow:0 0 40px rgba(198,40,40,0.4)}50%{box-shadow:0 0 80px rgba(198,40,40,0.8)}}
-.splash-title{font-family:'Bebas Neue';font-size:40px;letter-spacing:3px;color:#fff;}
-.splash-sub{color:var(--dim);font-size:13px;margin-top:6px;letter-spacing:2px;text-transform:uppercase;}
-.splash-loader{width:40px;height:3px;background:var(--border);border-radius:2px;margin-top:48px;overflow:hidden;}
-.splash-loader-bar{height:100%;width:0;background:var(--primary);border-radius:2px;animation:load 1.8s ease-in-out forwards;}
-@keyframes load{0%{width:0}100%{width:100%}}
-
-/* ── LOGIN ── */
-#pg-login{
-  background:radial-gradient(ellipse at 40% 0%, #3a0000 0%, #0C0C0C 60%);
-  padding:32px 24px;min-height:100vh;
-  display:flex;flex-direction:column;
-}
-.login-header{text-align:center;padding:32px 0 24px;}
-.login-logo{width:80px;height:80px;background:var(--primary);border-radius:22px;display:inline-flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:36px;color:#fff;box-shadow:0 8px 32px rgba(198,40,40,0.4);}
-.login-title{font-family:'Bebas Neue';font-size:32px;letter-spacing:2px;margin-top:16px;}
-.login-sub{color:var(--dim);font-size:13px;margin-top:4px;}
-
-.form-group{margin-bottom:16px;}
-.form-label{font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:block;}
-.form-input{
-  width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r-sm);
-  color:var(--text);font-family:'Nunito';font-size:15px;padding:14px 16px;
-  outline:none;transition:border-color .2s;
-}
-.form-input:focus{border-color:var(--primary);}
+body{background:#0C0C0C;color:#F5F5F5;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;}
+.page{display:none;min-height:100vh;}
+.page.active{display:flex;flex-direction:column;}
+#pg-splash{background:radial-gradient(ellipse at 50% 30%,#4a0000,#0C0C0C);align-items:center;justify-content:center;cursor:pointer;}
+.logo{width:110px;height:110px;background:#C62828;border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:900;color:#fff;box-shadow:0 0 60px rgba(198,40,40,0.6);margin-bottom:24px;}
+.splash-title{font-size:36px;font-weight:900;letter-spacing:2px;}
+.splash-sub{color:#757575;font-size:13px;margin-top:8px;letter-spacing:3px;text-transform:uppercase;}
+.tap-hint{color:rgba(255,255,255,0.3);font-size:13px;margin-top:48px;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:0.3}50%{opacity:1}}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#181818;border-bottom:1px solid #2C2C2C;position:sticky;top:0;z-index:100;}
+.topbar-title{font-size:18px;font-weight:800;}
+.topbar-sub{font-size:11px;color:#757575;margin-top:2px;}
+.icon-btn{width:40px;height:40px;border-radius:10px;background:#222;border:none;color:#F5F5F5;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.top-btns{display:flex;gap:8px;}
+.content{padding:16px;flex:1;}
+#pg-login{background:radial-gradient(ellipse at 50% 0%,#3a0000,#0C0C0C);}
+.login-top{text-align:center;padding:40px 24px 28px;}
+.login-logo{width:80px;height:80px;background:#C62828;border-radius:22px;display:inline-flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff;}
+.login-title{font-size:28px;font-weight:900;margin-top:16px;}
+.login-sub{color:#757575;font-size:13px;margin-top:6px;}
+.login-body{padding:0 24px 32px;flex:1;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:11px;font-weight:700;color:#757575;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;display:block;}
+.form-input{width:100%;background:#181818;border:1.5px solid #2C2C2C;border-radius:12px;color:#F5F5F5;font-family:inherit;font-size:15px;padding:14px 16px;outline:none;}
+.form-input:focus{border-color:#C62828;}
 select.form-input option{background:#222;}
-
-.btn{
-  width:100%;padding:16px;border:none;border-radius:var(--r-sm);
-  font-family:'Nunito';font-size:16px;font-weight:800;cursor:pointer;
-  transition:all .15s;letter-spacing:.5px;
-}
-.btn-primary{background:var(--primary);color:#fff;}
-.btn-primary:active{background:var(--primary-d);transform:scale(0.98);}
-.btn-outline{background:transparent;color:var(--text);border:1.5px solid var(--border);}
-.btn-outline:active{background:var(--card2);}
-.btn-green{background:var(--green);color:#fff;}
-.btn-green:active{background:#1a5220;transform:scale(0.98);}
-.btn-sm{padding:10px 16px;font-size:14px;width:auto;}
-
-.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 16px;}
-.pin-btn{
-  background:var(--card);border:1.5px solid var(--border);border-radius:var(--r-sm);
-  color:var(--text);font-family:'Nunito';font-size:22px;font-weight:700;
-  padding:18px 0;cursor:pointer;transition:all .1s;
-}
-.pin-btn:active{background:var(--primary);border-color:var(--primary);transform:scale(0.95);}
-.pin-display{
-  background:var(--card);border:1.5px solid var(--border);border-radius:var(--r-sm);
-  padding:16px;text-align:center;font-size:28px;letter-spacing:12px;
-  margin-bottom:12px;color:var(--text);min-height:62px;
-}
-.pin-dots{display:flex;gap:10px;justify-content:center;align-items:center;}
-.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);transition:background .1s;}
-.pin-dot.filled{background:var(--primary);}
-
-/* ── TOP BAR ── */
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 20px;background:var(--card);border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:100;
-}
-.topbar-title{font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;}
-.topbar-sub{font-size:12px;color:var(--dim);margin-top:1px;}
-.icon-btn{
-  width:40px;height:40px;border-radius:10px;background:var(--card2);border:none;
-  color:var(--text);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;
-}
-.icon-btn:active{background:var(--border);}
-
-/* ── CONTENT ── */
-.content{padding:20px;}
-
-/* ── CARDS ── */
-.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:20px;margin-bottom:14px;}
-.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:12px;}
-
-/* ── STAT GRID ── */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
-.stat-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:16px;}
-.stat-label{font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-.stat-value{font-family:'Bebas Neue';font-size:26px;letter-spacing:1px;}
-.stat-value.green{color:var(--green-l);}
-.stat-value.red{color:var(--red-l);}
-.stat-value.yellow{color:var(--yellow);}
-.stat-value.white{color:var(--text);}
-
-/* ── HERO CARD ── */
-.hero-card{
-  background:linear-gradient(135deg, var(--primary-d) 0%, var(--primary) 100%);
-  border-radius:var(--r);padding:24px;margin-bottom:14px;position:relative;overflow:hidden;
-}
-.hero-card::before{
-  content:'DK';font-family:'Bebas Neue';font-size:120px;color:rgba(255,255,255,0.05);
-  position:absolute;right:-10px;top:-20px;line-height:1;pointer-events:none;
-}
-.hero-name{font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;}
-.hero-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-top:2px;}
-.hero-date{font-size:12px;color:rgba(255,255,255,0.6);margin-top:12px;}
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
-.badge-green{background:rgba(46,125,50,0.3);color:#81C784;border:1px solid rgba(46,125,50,0.5);}
-.badge-yellow{background:rgba(249,168,37,0.2);color:#FFD54F;border:1px solid rgba(249,168,37,0.4);}
-.badge-red{background:rgba(198,40,40,0.3);color:#EF9A9A;border:1px solid rgba(198,40,40,0.5);}
-
-/* ── SECTION HEADER ── */
-.section-header{
-  display:flex;align-items:center;gap:10px;padding:14px 16px;
-  background:var(--card2);border-radius:var(--r-sm);margin-bottom:12px;
-  border-left:3px solid var(--primary);
-}
-.section-icon{font-size:20px;}
-.section-title{font-weight:800;font-size:15px;}
-
-/* ── ACTION LIST ── */
-.action-item{
-  display:flex;align-items:center;gap:14px;padding:16px;
-  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-  margin-bottom:10px;cursor:pointer;transition:all .15s;
-}
-.action-item:active{background:var(--card2);transform:scale(0.99);}
+textarea.form-input{resize:none;}
+.btn{width:100%;padding:16px;border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;}
+.btn-red{background:#C62828;color:#fff;}
+.btn-green{background:#1B5E20;color:#fff;}
+.btn-outline{background:transparent;color:#F5F5F5;border:1.5px solid #2C2C2C;}
+.pin-display{background:#181818;border:1.5px solid #2C2C2C;border-radius:12px;padding:18px;text-align:center;margin-bottom:12px;}
+.pin-dots{display:flex;gap:14px;justify-content:center;}
+.pin-dot{width:16px;height:16px;border-radius:50%;background:#2C2C2C;transition:all .15s;}
+.pin-dot.filled{background:#C62828;}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.pin-btn{background:#181818;border:1.5px solid #2C2C2C;border-radius:12px;color:#F5F5F5;font-family:inherit;font-size:24px;font-weight:700;padding:18px 0;cursor:pointer;}
+.pin-btn:active{background:#C62828;border-color:#C62828;}
+.pin-error{color:#EF5350;text-align:center;font-size:13px;padding:8px;display:none;}
+.hero{background:linear-gradient(135deg,#8E0000,#C62828);border-radius:16px;padding:22px;margin-bottom:12px;}
+.hero-name{font-size:22px;font-weight:900;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;}
+.hero-date{font-size:11px;color:rgba(255,255,255,0.5);margin-top:12px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat-card{background:#181818;border-radius:14px;border:1px solid #2C2C2C;padding:14px;}
+.stat-label{font-size:10px;color:#757575;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.stat-value{font-size:22px;font-weight:900;}
+.green{color:#43A047;}.red{color:#EF5350;}.blue{color:#42A5F5;}
+.action-item{display:flex;align-items:center;gap:14px;padding:16px;background:#181818;border:1px solid #2C2C2C;border-radius:14px;margin-bottom:10px;cursor:pointer;}
+.action-item:active{background:#222;}
 .action-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.action-icon.red{background:rgba(198,40,40,0.15);}
-.action-icon.blue{background:rgba(21,101,192,0.15);}
-.action-icon.green{background:rgba(27,94,32,0.15);}
-.action-icon.orange{background:rgba(255,109,0,0.15);}
-.action-text{flex:1;}
+.a-red{background:rgba(198,40,40,0.15);}.a-blue{background:rgba(21,101,192,0.15);}
 .action-title{font-weight:700;font-size:15px;}
-.action-sub{font-size:12px;color:var(--dim);margin-top:2px;}
-.action-arrow{color:var(--dim);font-size:18px;}
-
-/* ── FORM ── */
-.form-section{background:var(--card);border-radius:var(--r);border:1px solid var(--border);margin-bottom:12px;overflow:hidden;}
-.form-section-header{
-  padding:14px 18px;background:var(--card2);
-  font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;
-  border-bottom:1px solid var(--border);
-}
-.form-section-body{padding:18px;}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.total-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:12px 14px;background:var(--card2);border-radius:var(--r-sm);margin-top:8px;
-}
-.total-label{font-size:13px;font-weight:700;color:var(--dim);}
-.total-value{font-family:'Bebas Neue';font-size:20px;}
-.total-value.green{color:var(--green-l);}
-.total-value.red{color:var(--red-l);}
-.total-value.blue{color:#64B5F6;}
-
-/* ── PROFIT BANNER ── */
-.profit-banner{
-  border-radius:var(--r);padding:20px 24px;margin-bottom:14px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.profit-banner.profit{background:linear-gradient(135deg,#1B5E20,#2E7D32);}
-.profit-banner.loss{background:linear-gradient(135deg,#7F0000,#C62828);}
-.profit-label{font-size:13px;font-weight:700;opacity:0.8;}
-.profit-amount{font-family:'Bebas Neue';font-size:32px;letter-spacing:1px;}
-
-/* ── BRANCH LIST (Owner) ── */
-.branch-item{
-  display:flex;align-items:center;gap:14px;padding:14px 18px;
-  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-  margin-bottom:8px;cursor:pointer;transition:all .15s;
-}
-.branch-item:active{background:var(--card2);}
-.branch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.branch-dot.reported{background:var(--green-l);}
-.branch-dot.pending{background:var(--yellow);}
-.branch-info{flex:1;}
-.branch-name{font-weight:700;font-size:14px;}
-.branch-stats{font-size:12px;color:var(--dim);margin-top:2px;}
-.branch-profit{text-align:right;}
-.branch-rev{font-family:'Bebas Neue';font-size:18px;color:var(--green-l);}
-.branch-pnl{font-size:11px;color:var(--dim);}
-
-/* ── TABS ── */
-.tabs{display:flex;background:var(--card);border-radius:var(--r-sm);padding:4px;margin-bottom:20px;gap:4px;}
-.tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;transition:all .15s;color:var(--dim);}
-.tab.active{background:var(--primary);color:#fff;}
-
-/* ── CHART ── */
-.chart-wrap{position:relative;height:180px;margin-top:8px;}
-
-/* ── SUCCESS ── */
-#pg-success{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;padding:32px 24px;
-  background:radial-gradient(ellipse at 50% 30%, #1B5E20 0%, #0C0C0C 60%);
-}
-.success-icon{font-size:80px;margin-bottom:24px;animation:bounce .5s ease;}
-@keyframes bounce{0%{transform:scale(0)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
-.success-title{font-family:'Bebas Neue';font-size:36px;letter-spacing:2px;text-align:center;}
-.success-sub{color:var(--dim);font-size:14px;margin-top:8px;text-align:center;}
-.success-stats{
-  background:var(--card);border-radius:var(--r);padding:20px;margin:24px 0;width:100%;
-  border:1px solid var(--border);
-}
-.success-stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
-.success-stat-row:last-child{border-bottom:none;}
-.s-label{color:var(--dim);font-size:14px;}
-.s-value{font-weight:700;font-size:14px;}
-
-/* ── SETTINGS ── */
-.settings-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 18px;background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);margin-bottom:8px;
-}
-.settings-label{font-weight:700;font-size:14px;}
-.settings-sub{font-size:12px;color:var(--dim);margin-top:2px;}
-.settings-action{color:var(--dim);font-size:13px;}
-
-/* ── TOAST ── */
-.toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
-  background:#333;color:#fff;padding:12px 20px;border-radius:var(--r-sm);
-  font-size:14px;font-weight:600;z-index:999;transition:transform .3s ease;
-  white-space:nowrap;max-width:90vw;text-align:center;
-}
+.action-sub{font-size:12px;color:#757575;margin-top:2px;}
+.fsec{background:#181818;border-radius:14px;border:1px solid #2C2C2C;margin-bottom:12px;overflow:hidden;}
+.fsec-head{padding:13px 16px;background:#1E1E1E;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #2C2C2C;}
+.fsec-body{padding:16px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:#1E1E1E;border-radius:10px;margin-top:8px;}
+.total-label{font-size:12px;font-weight:700;color:#757575;}
+.total-val{font-size:20px;font-weight:900;}
+.profit-banner{border-radius:14px;padding:18px 22px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.pb-profit{background:linear-gradient(135deg,#1B5E20,#2E7D32);}
+.pb-loss{background:linear-gradient(135deg,#7F0000,#C62828);}
+.pb-label{font-size:12px;font-weight:700;opacity:0.8;}
+.pb-amount{font-size:30px;font-weight:900;}
+.tabs{display:flex;background:#181818;border-radius:12px;padding:4px;margin-bottom:16px;gap:4px;}
+.tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;color:#757575;}
+.tab.active{background:#C62828;color:#fff;}
+.branch-item{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#181818;border:1px solid #2C2C2C;border-radius:14px;margin-bottom:8px;}
+.bdot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.bdot-g{background:#43A047;}.bdot-y{background:#F9A825;}
+.binfo{flex:1;}
+.bname{font-weight:700;font-size:14px;}
+.bstats{font-size:11px;color:#757575;margin-top:2px;}
+.bprofit{text-align:right;}
+.brev{font-size:17px;font-weight:900;color:#43A047;}
+.bpnl{font-size:11px;color:#757575;}
+#pg-success{background:radial-gradient(ellipse at 50% 20%,#1B5E20,#0C0C0C);align-items:center;justify-content:center;text-align:center;padding:32px;}
+.suc-icon{font-size:80px;margin-bottom:20px;}
+.suc-title{font-size:32px;font-weight:900;margin-bottom:8px;}
+.suc-sub{color:#757575;font-size:14px;margin-bottom:24px;}
+.suc-stats{background:#181818;border:1px solid #2C2C2C;border-radius:14px;padding:18px;width:100%;margin-bottom:24px;}
+.srow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2C2C2C;}
+.srow:last-child{border:none;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#181818;border-radius:20px 20px 0 0;padding:24px;width:100%;max-height:80vh;overflow-y:auto;border:1px solid #2C2C2C;}
+.modal-title{font-size:22px;font-weight:900;margin-bottom:16px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#333;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:600;z-index:999;transition:transform .3s;max-width:90vw;text-align:center;}
 .toast.show{transform:translateX(-50%) translateY(0);}
-.toast.success{background:var(--green);}
-.toast.error{background:var(--red);}
-
-/* ── MODAL ── */
-.modal-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;
-  align-items:flex-end;justify-content:center;
-}
-.modal-overlay.open{display:flex;}
-.modal{
-  background:var(--card);border-radius:var(--r) var(--r) 0 0;padding:24px;
-  width:100%;max-width:500px;border:1px solid var(--border);border-bottom:none;
-  animation:slideUp .25s ease;
-}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-title{font-family:'Bebas Neue';font-size:24px;margin-bottom:16px;}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-
-/* ── SEPARATOR ── */
-.sep{height:1px;background:var(--border);margin:12px 0;}
-.gap{height:80px;}
-
-/* ── BOTTOM SAFE ── */
-.safe-bottom{height:calc(env(safe-area-inset-bottom) + 16px);}
+.tok{background:#1B5E20;}.terr{background:#C62828;}
+.sep{height:1px;background:#2C2C2C;margin:14px 0;}
+.gap{height:32px;}
+.card{background:#181818;border-radius:14px;border:1px solid #2C2C2C;padding:16px;margin-bottom:12px;}
+.warn-box{background:rgba(249,168,37,0.1);border:1px solid rgba(249,168,37,0.3);border-radius:12px;padding:14px;margin-bottom:12px;}
+.ok-box{background:rgba(27,94,32,0.2);border:1px solid rgba(67,160,71,0.3);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
 </style>
 </head>
 <body>
 
-<!-- SPLASH -->
-<div id="pg-splash" class="page active">
-  <div class="splash-logo">DK</div>
-  <div class="splash-title">Doatana Kebab</div>
+<div id="pg-splash" class="page active" onclick="goLogin()">
+  <div class="logo">DK</div>
+  <div class="splash-title">DOATANA KEBAB</div>
   <div class="splash-sub">Management System</div>
-  <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+  <div class="tap-hint">Tap to continue</div>
 </div>
 
-<!-- LOGIN -->
 <div id="pg-login" class="page">
-  <div class="login-header">
+  <div class="login-top">
     <div class="login-logo">DK</div>
     <div class="login-title">Doatana Manager</div>
-    <div class="login-sub">Enter your PIN to continue</div>
+    <div class="login-sub">Select branch, enter name, then PIN</div>
   </div>
-  <div style="padding:0 24px 32px;">
+  <div class="login-body">
     <div class="form-group">
-      <label class="form-label">Your Branch</label>
-      <select class="form-input" id="loginBranch">
-        <option value="">Select Branch...</option>
-      </select>
+      <label class="form-label">Branch</label>
+      <select class="form-input" id="sel-branch"><option value="">Select branch...</option></select>
     </div>
     <div class="form-group">
       <label class="form-label">Your Name</label>
-      <input class="form-input" id="loginName" type="text" placeholder="Enter your name">
+      <input class="form-input" id="inp-name" type="text" placeholder="Enter your name">
     </div>
-    <div class="form-group">
-      <div id="pinDisplay" class="pin-display">
-        <div class="pin-dots">
-          <div class="pin-dot" id="d0"></div>
-          <div class="pin-dot" id="d1"></div>
-          <div class="pin-dot" id="d2"></div>
-          <div class="pin-dot" id="d3"></div>
-        </div>
-      </div>
-      <div class="pin-grid">
-        <button class="pin-btn" onclick="pinPress('1')">1</button>
-        <button class="pin-btn" onclick="pinPress('2')">2</button>
-        <button class="pin-btn" onclick="pinPress('3')">3</button>
-        <button class="pin-btn" onclick="pinPress('4')">4</button>
-        <button class="pin-btn" onclick="pinPress('5')">5</button>
-        <button class="pin-btn" onclick="pinPress('6')">6</button>
-        <button class="pin-btn" onclick="pinPress('7')">7</button>
-        <button class="pin-btn" onclick="pinPress('8')">8</button>
-        <button class="pin-btn" onclick="pinPress('9')">9</button>
-        <button class="pin-btn" onclick="pinPress('C')" style="font-size:15px;color:var(--dim)">CLR</button>
-        <button class="pin-btn" onclick="pinPress('0')">0</button>
-        <button class="pin-btn" onclick="pinPress('⌫')" style="font-size:20px">⌫</button>
-      </div>
+    <div class="pin-display"><div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div></div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pin('1')">1</button><button class="pin-btn" onclick="pin('2')">2</button><button class="pin-btn" onclick="pin('3')">3</button>
+      <button class="pin-btn" onclick="pin('4')">4</button><button class="pin-btn" onclick="pin('5')">5</button><button class="pin-btn" onclick="pin('6')">6</button>
+      <button class="pin-btn" onclick="pin('7')">7</button><button class="pin-btn" onclick="pin('8')">8</button><button class="pin-btn" onclick="pin('9')">9</button>
+      <button class="pin-btn" style="font-size:13px;color:#555" onclick="pin('C')">CLR</button>
+      <button class="pin-btn" onclick="pin('0')">0</button>
+      <button class="pin-btn" style="font-size:20px" onclick="pin('X')">⌫</button>
     </div>
-    <div id="loginError" style="color:var(--red-l);text-align:center;font-size:13px;margin-bottom:12px;display:none;">
-      ❌ Incorrect PIN. Try again.
-    </div>
-    <div style="text-align:center;color:var(--dim);font-size:12px;margin-top:8px;">
-      Owner PIN: configured in settings
-    </div>
+    <div class="pin-error" id="pin-err">❌ Wrong PIN. Try again.</div>
+    <div style="text-align:center;color:#444;font-size:12px;margin-top:8px;">Owner: 0000 · Manager: 1111</div>
   </div>
 </div>
 
-<!-- MANAGER HOME -->
 <div id="pg-manager" class="page">
   <div class="topbar">
-    <div>
-      <div class="topbar-title" id="mgr-branch-title">Branch Name</div>
-      <div class="topbar-sub" id="mgr-date-title">Loading...</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="icon-btn" onclick="goto('pg-settings')">⚙️</button>
-      <button class="icon-btn" onclick="logout()">🚪</button>
-    </div>
+    <div><div class="topbar-title" id="m-title">Branch</div><div class="topbar-sub" id="m-sub">Today</div></div>
+    <div class="top-btns"><button class="icon-btn" onclick="go('pg-settings')">⚙️</button><button class="icon-btn" onclick="doLogout()">🚪</button></div>
   </div>
   <div class="content">
-    <div id="mgr-hero" class="hero-card">
-      <div class="hero-name" id="mgr-name">Manager</div>
-      <div class="hero-sub" id="mgr-branch-sub">Branch</div>
-      <div class="hero-date" id="mgr-today-date">Today</div>
+    <div class="hero">
+      <div class="hero-name" id="m-hi">Hi!</div>
+      <div class="hero-sub" id="m-branch">Branch</div>
+      <div class="hero-date" id="m-date">Date</div>
     </div>
-
     <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">Today Revenue</div>
-        <div class="stat-value green" id="mgr-today-rev">PLN 0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Today Profit</div>
-        <div class="stat-value" id="mgr-today-profit">PLN 0</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">Today Revenue</div><div class="stat-value green" id="m-rev">PLN 0</div></div>
+      <div class="stat-card"><div class="stat-label">Today Profit</div><div class="stat-value green" id="m-profit">PLN 0</div></div>
     </div>
-
-    <div id="mgr-submitted-banner" style="display:none;" class="card" style="background:rgba(27,94,32,0.2);border-color:rgba(46,125,50,0.4);">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:24px;">✅</span>
-        <div>
-          <div style="font-weight:700;">Report Submitted Today</div>
-          <div style="font-size:12px;color:var(--dim);">Daily report already submitted for today.</div>
-        </div>
-      </div>
+    <div id="m-ok" class="ok-box" style="display:none;"><span style="font-size:24px;">✅</span><div><div style="font-weight:700;">Submitted Today</div><div style="font-size:12px;color:#757575;">Report already saved for today</div></div></div>
+    <div class="action-item" onclick="go('pg-entry')">
+      <div class="action-icon a-red">📊</div>
+      <div><div class="action-title">Submit Daily Report</div><div class="action-sub" id="m-hint">Enter today's cash data</div></div>
+      <span style="color:#555;font-size:22px;">›</span>
     </div>
-
-    <div style="margin-bottom:6px;font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;">Actions</div>
-
-    <div class="action-item" onclick="goto('pg-entry')">
-      <div class="action-icon red">📊</div>
-      <div class="action-text">
-        <div class="action-title">Submit Daily Report</div>
-        <div class="action-sub" id="mgr-entry-sub">Tap to enter today's cash data</div>
-      </div>
-      <div class="action-arrow">›</div>
+    <div class="action-item" onclick="openHist()">
+      <div class="action-icon a-blue">🗂️</div>
+      <div><div class="action-title">View History</div><div class="action-sub">Past reports</div></div>
+      <span style="color:#555;font-size:22px;">›</span>
     </div>
-
-    <div class="action-item" onclick="showHistory()">
-      <div class="action-icon blue">🗂️</div>
-      <div class="action-text">
-        <div class="action-title">View My History</div>
-        <div class="action-sub">Past daily reports</div>
-      </div>
-      <div class="action-arrow">›</div>
-    </div>
-
     <div class="gap"></div>
   </div>
 </div>
 
-<!-- DAILY ENTRY FORM -->
 <div id="pg-entry" class="page">
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <button class="icon-btn" onclick="goto('pg-manager')">‹</button>
-      <div>
-        <div class="topbar-title">Daily Report</div>
-        <div class="topbar-sub" id="entry-date-sub">Today</div>
-      </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="icon-btn" onclick="go('pg-manager')">‹</button>
+      <div><div class="topbar-title">Daily Report</div><div class="topbar-sub" id="e-date">Today</div></div>
     </div>
-    <div id="entry-branch-badge" class="badge badge-green">Branch</div>
+    <span id="e-badge" style="background:rgba(27,94,32,0.4);color:#81C784;border:1px solid rgba(67,160,71,0.4);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Branch</span>
   </div>
   <div class="content">
-
-    <!-- CASH REGISTER -->
-    <div class="form-section">
-      <div class="form-section-header"><span>💵</span> Cash Register</div>
-      <div class="form-section-body">
-        <div class="field-row">
-          <div class="form-group">
-            <label class="form-label">Opening Cash</label>
-            <input class="form-input" id="f-open" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Closing Cash</label>
-            <input class="form-input" id="f-close" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-        </div>
+    <div class="fsec"><div class="fsec-head">💵 Cash Register</div><div class="fsec-body">
+      <div class="field-row">
+        <div class="form-group"><label class="form-label">Opening Cash</label><input class="form-input" id="e-open" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
+        <div class="form-group"><label class="form-label">Closing Cash</label><input class="form-input" id="e-close" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
       </div>
-    </div>
-
-    <!-- POS SALES -->
-    <div class="form-section">
-      <div class="form-section-header"><span>🖥️</span> POS Sales</div>
-      <div class="form-section-body">
-        <div class="field-row">
-          <div class="form-group">
-            <label class="form-label">Cash Sales (PLN)</label>
-            <input class="form-input" id="f-pos-cash" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Card Sales (PLN)</label>
-            <input class="form-input" id="f-pos-card" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-        </div>
-        <div class="total-row">
-          <span class="total-label">POS Total</span>
-          <span class="total-value blue" id="t-pos">PLN 0.00</span>
-        </div>
+    </div></div>
+    <div class="fsec"><div class="fsec-head">🖥️ POS Sales</div><div class="fsec-body">
+      <div class="field-row">
+        <div class="form-group"><label class="form-label">Cash (PLN)</label><input class="form-input" id="e-pc" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
+        <div class="form-group"><label class="form-label">Card (PLN)</label><input class="form-input" id="e-pk" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
       </div>
-    </div>
-
-    <!-- DELIVERY -->
-    <div class="form-section">
-      <div class="form-section-header"><span>🛵</span> Delivery Platforms</div>
-      <div class="form-section-body">
-        <div class="field-row">
-          <div class="form-group">
-            <label class="form-label">Uber Eats</label>
-            <input class="form-input" id="f-uber" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Bolt Food</label>
-            <input class="form-input" id="f-bolt" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="form-group">
-            <label class="form-label">Glovo</label>
-            <input class="form-input" id="f-glovo" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Other</label>
-            <input class="form-input" id="f-del-other" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-        </div>
-        <div class="total-row">
-          <span class="total-label">Delivery Total</span>
-          <span class="total-value blue" id="t-del">PLN 0.00</span>
-        </div>
+      <div class="total-row"><span class="total-label">POS Total</span><span class="total-val blue" id="t-pos">PLN 0.00</span></div>
+    </div></div>
+    <div class="fsec"><div class="fsec-head">🛵 Delivery</div><div class="fsec-body">
+      <div class="field-row">
+        <div class="form-group"><label class="form-label">Uber Eats</label><input class="form-input" id="e-ub" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
+        <div class="form-group"><label class="form-label">Bolt Food</label><input class="form-input" id="e-bo" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
       </div>
-    </div>
-
-    <!-- REVENUE SUMMARY -->
-    <div class="total-row" style="background:var(--card);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;border:1px solid var(--border);">
-      <div>
-        <div style="font-size:12px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Total Revenue</div>
-        <div style="font-size:12px;color:var(--dim);margin-top:2px;">POS + All Delivery</div>
+      <div class="field-row">
+        <div class="form-group"><label class="form-label">Glovo</label><input class="form-input" id="e-gl" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
+        <div class="form-group"><label class="form-label">Other</label><input class="form-input" id="e-do" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
       </div>
-      <span class="total-value green" id="t-rev" style="font-size:28px;">PLN 0.00</span>
-    </div>
-
-    <!-- EXPENSES -->
-    <div class="form-section">
-      <div class="form-section-header"><span>📋</span> Expenses</div>
-      <div class="form-section-body">
-        <div class="field-row">
-          <div class="form-group">
-            <label class="form-label">Staff Cost</label>
-            <input class="form-input" id="f-staff" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Supplies</label>
-            <input class="form-input" id="f-supply" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="form-group">
-            <label class="form-label">Rent</label>
-            <input class="form-input" id="f-rent" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Utilities</label>
-            <input class="form-input" id="f-util" type="number" placeholder="0.00" oninput="calcTotals()">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Other Expenses</label>
-          <input class="form-input" id="f-other-exp" type="number" placeholder="0.00" oninput="calcTotals()">
-        </div>
-        <div class="total-row">
-          <span class="total-label">Total Expenses</span>
-          <span class="total-value red" id="t-exp">PLN 0.00</span>
-        </div>
+      <div class="total-row"><span class="total-label">Delivery Total</span><span class="total-val blue" id="t-del">PLN 0.00</span></div>
+    </div></div>
+    <div class="card" style="background:#111;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:11px;color:#757575;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Total Revenue</div></div><span class="total-val green" id="t-rev" style="font-size:26px;">PLN 0.00</span></div></div>
+    <div class="fsec"><div class="fsec-head">📋 Expenses</div><div class="fsec-body">
+      <div class="field-row">
+        <div class="form-group"><label class="form-label">Staff</label><input class="form-input" id="e-st" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
+        <div class="form-group"><label class="form-label">Supplies</label><input class="form-input" id="e-su" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
       </div>
-    </div>
-
-    <!-- NET PROFIT -->
-    <div id="profit-banner" class="profit-banner profit">
-      <div>
-        <div class="profit-label" id="profit-label">✅ Net Profit</div>
-        <div style="font-size:12px;opacity:0.6;margin-top:2px;">Revenue - Expenses</div>
+      <div class="field-row">
+        <div class="form-group"><label class="form-label">Rent</label><input class="form-input" id="e-re" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
+        <div class="form-group"><label class="form-label">Utilities</label><input class="form-input" id="e-ut" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
       </div>
-      <div class="profit-amount" id="t-profit">PLN 0.00</div>
+      <div class="form-group"><label class="form-label">Other</label><input class="form-input" id="e-oe" type="number" inputmode="decimal" placeholder="0.00" oninput="calc()"></div>
+      <div class="total-row"><span class="total-label">Total Expenses</span><span class="total-val red" id="t-exp">PLN 0.00</span></div>
+    </div></div>
+    <div id="pb" class="profit-banner pb-profit">
+      <div><div class="pb-label" id="pb-lbl">✅ Net Profit</div><div style="font-size:11px;opacity:0.6;margin-top:3px;">Revenue − Expenses</div></div>
+      <div class="pb-amount" id="t-profit">PLN 0.00</div>
     </div>
-
-    <!-- NOTES -->
-    <div class="form-section">
-      <div class="form-section-header"><span>📝</span> Notes</div>
-      <div class="form-section-body">
-        <textarea class="form-input" id="f-notes" rows="3" placeholder="Any issues, special events, observations..."></textarea>
-      </div>
-    </div>
-
-    <button class="btn btn-green" id="submitBtn" onclick="submitEntry()">
-      ✅ Submit Daily Report
-    </button>
-
+    <div class="fsec"><div class="fsec-head">📝 Notes</div><div class="fsec-body">
+      <textarea class="form-input" id="e-notes" rows="3" placeholder="Issues, events, remarks..."></textarea>
+    </div></div>
+    <button class="btn btn-green" id="sub-btn" onclick="submitReport()">✅ Submit Daily Report</button>
     <div class="gap"></div>
   </div>
 </div>
 
-<!-- SUCCESS -->
 <div id="pg-success" class="page">
-  <div class="success-icon">✅</div>
-  <div class="success-title">Report Submitted!</div>
-  <div class="success-sub" id="success-branch-name">Successfully saved</div>
-  <div class="success-stats" id="success-stats"></div>
-  <button class="btn btn-primary" onclick="goto('pg-manager')">Back to Home</button>
-  <div class="safe-bottom"></div>
+  <div class="suc-icon">✅</div>
+  <div class="suc-title">Submitted!</div>
+  <div class="suc-sub" id="suc-sub">Report saved</div>
+  <div class="suc-stats" id="suc-stats"></div>
+  <button class="btn btn-red" onclick="go('pg-manager')" style="max-width:300px;">Back to Home</button>
 </div>
 
-<!-- OWNER DASHBOARD -->
 <div id="pg-owner" class="page">
   <div class="topbar">
-    <div>
-      <div class="topbar-title">Owner Dashboard</div>
-      <div class="topbar-sub" id="owner-date">Loading...</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="icon-btn" onclick="refreshOwner()">🔄</button>
-      <button class="icon-btn" onclick="goto('pg-settings')">⚙️</button>
-      <button class="icon-btn" onclick="logout()">🚪</button>
+    <div><div class="topbar-title">Owner Dashboard</div><div class="topbar-sub" id="o-date">Today</div></div>
+    <div class="top-btns">
+      <button class="icon-btn" onclick="loadOwner()">🔄</button>
+      <button class="icon-btn" onclick="go('pg-settings')">⚙️</button>
+      <button class="icon-btn" onclick="doLogout()">🚪</button>
     </div>
   </div>
   <div class="content">
-
-    <div class="tabs" id="ownerTabs">
-      <div class="tab active" onclick="ownerTab('today')">Today</div>
-      <div class="tab" onclick="ownerTab('month')">Month</div>
-      <div class="tab" onclick="ownerTab('branches')">Branches</div>
+    <div class="tabs">
+      <div class="tab active" onclick="oTab(0,this)">Today</div>
+      <div class="tab" onclick="oTab(1,this)">Month</div>
+      <div class="tab" onclick="oTab(2,this)">Branches</div>
     </div>
-
-    <!-- TODAY TAB -->
-    <div id="tab-today">
+    <div id="op0">
       <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Revenue</div>
-          <div class="stat-value green" id="o-today-rev">PLN 0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Net Profit</div>
-          <div class="stat-value" id="o-today-profit">PLN 0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Reported</div>
-          <div class="stat-value white" id="o-reported">0/0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Expenses</div>
-          <div class="stat-value red" id="o-today-exp">PLN 0</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value green" id="o-rev">PLN 0</div></div>
+        <div class="stat-card"><div class="stat-label">Profit</div><div class="stat-value green" id="o-profit">PLN 0</div></div>
+        <div class="stat-card"><div class="stat-label">Expenses</div><div class="stat-value red" id="o-exp">PLN 0</div></div>
+        <div class="stat-card"><div class="stat-label">Reported</div><div class="stat-value" id="o-rep">0/0</div></div>
       </div>
-
-      <div id="missing-branches" class="card" style="background:rgba(249,168,37,0.08);border-color:rgba(249,168,37,0.3);display:none;">
-        <div class="card-title">⚠️ Not Reported Today</div>
-        <div id="missing-list" style="font-size:13px;color:var(--dim);line-height:2;"></div>
-      </div>
-
-      <div style="margin-bottom:6px;font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;">Today's Entries</div>
-      <div id="today-entries-list"></div>
+      <div id="o-miss" class="warn-box" style="display:none;"><div style="font-size:12px;font-weight:700;color:#F9A825;margin-bottom:6px;">⚠️ Not Reported Today</div><div id="o-miss-list" style="font-size:12px;color:#9E9E9E;line-height:1.8;"></div></div>
+      <div id="o-list"></div>
     </div>
-
-    <!-- MONTH TAB -->
-    <div id="tab-month" style="display:none;">
+    <div id="op1" style="display:none;">
       <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-label">Month Revenue</div>
-          <div class="stat-value green" id="o-month-rev">PLN 0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Month Profit</div>
-          <div class="stat-value" id="o-month-profit">PLN 0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Month Expenses</div>
-          <div class="stat-value red" id="o-month-exp">PLN 0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Reports</div>
-          <div class="stat-value white" id="o-month-count">0</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Month Revenue</div><div class="stat-value green" id="om-rev">PLN 0</div></div>
+        <div class="stat-card"><div class="stat-label">Month Profit</div><div class="stat-value green" id="om-profit">PLN 0</div></div>
+        <div class="stat-card"><div class="stat-label">Expenses</div><div class="stat-value red" id="om-exp">PLN 0</div></div>
+        <div class="stat-card"><div class="stat-label">Reports</div><div class="stat-value" id="om-cnt">0</div></div>
       </div>
-      <div class="card">
-        <div class="card-title">📈 Daily Revenue Trend</div>
-        <div class="chart-wrap">
-          <canvas id="revenueChart"></canvas>
-        </div>
-      </div>
+      <div class="card"><div style="font-size:11px;color:#757575;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Daily Revenue</div><div id="m-chart"></div></div>
     </div>
-
-    <!-- BRANCHES TAB -->
-    <div id="tab-branches" style="display:none;">
-      <div id="branches-list"></div>
-    </div>
-
+    <div id="op2" style="display:none;"><div id="o-branches"></div></div>
     <div class="gap"></div>
   </div>
 </div>
 
-<!-- HISTORY MODAL -->
-<div id="historyModal" class="modal-overlay" onclick="closeModal('historyModal')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title">📂 My Reports</div>
-    <div id="history-list" style="max-height:60vh;overflow-y:auto;"></div>
-    <button class="btn btn-outline" style="margin-top:12px;" onclick="closeModal('historyModal')">Close</button>
-  </div>
-</div>
-
-<!-- SETTINGS PAGE -->
 <div id="pg-settings" class="page">
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <button class="icon-btn" id="settings-back-btn" onclick="settingsBack()">‹</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="icon-btn" onclick="settingsBack()">‹</button>
       <div class="topbar-title">Settings</div>
     </div>
   </div>
   <div class="content">
-    <div style="margin-bottom:8px;font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;">Google Sheets Sync</div>
-
-    <div class="form-group">
-      <label class="form-label">Google Apps Script URL</label>
-      <input class="form-input" id="s-api-url" type="url" placeholder="https://script.google.com/macros/s/...">
-      <div style="font-size:11px;color:var(--dim);margin-top:6px;">Paste your deployed Apps Script URL here to sync data to Google Sheets</div>
-    </div>
-    <button class="btn btn-primary" onclick="saveApiUrl()" style="margin-bottom:20px;">Save API URL</button>
-
+    <div style="font-size:11px;color:#757575;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Security</div>
+    <div class="form-group"><label class="form-label">Owner PIN (4 digits)</label><input class="form-input" id="s-op" type="number" inputmode="numeric"></div>
+    <div class="form-group"><label class="form-label">Manager PIN (4 digits)</label><input class="form-input" id="s-mp" type="number" inputmode="numeric"></div>
+    <button class="btn btn-red" onclick="savePins()" style="margin-bottom:20px;">Save PINs</button>
     <div class="sep"></div>
-
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;">Security</div>
-
-    <div class="form-group">
-      <label class="form-label">Owner PIN (default: 0000)</label>
-      <input class="form-input" id="s-owner-pin" type="number" placeholder="4-digit PIN" maxlength="4">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Manager PIN (default: 1111)</label>
-      <input class="form-input" id="s-mgr-pin" type="number" placeholder="4-digit PIN" maxlength="4">
-    </div>
-    <button class="btn btn-outline" onclick="savePins()" style="margin-bottom:20px;">Update PINs</button>
-
+    <div style="font-size:11px;color:#757575;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;">Branches (one per line)</div>
+    <div class="form-group"><textarea class="form-input" id="s-br" rows="12"></textarea></div>
+    <button class="btn btn-outline" onclick="saveBr()" style="margin-bottom:20px;">Save Branches</button>
     <div class="sep"></div>
-
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;">Branches</div>
-    <div class="form-group">
-      <label class="form-label">Branch Names (one per line)</label>
-      <textarea class="form-input" id="s-branches" rows="10" placeholder="Branch 1&#10;Branch 2&#10;..."></textarea>
-    </div>
-    <button class="btn btn-outline" onclick="saveBranches()" style="margin-bottom:20px;">Save Branches</button>
-
+    <div style="font-size:11px;color:#757575;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;">Google Sheets Sync</div>
+    <div class="form-group"><label class="form-label">Apps Script URL (optional)</label><input class="form-input" id="s-url" type="url" placeholder="https://script.google.com/..."></div>
+    <button class="btn btn-outline" onclick="saveUrl()" style="margin-bottom:20px;">Save URL</button>
     <div class="sep"></div>
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;">Data</div>
-    <button class="btn btn-outline" onclick="exportData()" style="margin-bottom:8px;">📤 Export All Data (JSON)</button>
-    <button class="btn btn-outline" onclick="if(confirm('Clear all data?')) clearData();" style="color:var(--red-l);border-color:var(--red);">🗑️ Clear All Local Data</button>
-
+    <div style="font-size:11px;color:#757575;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;">Data</div>
+    <button class="btn btn-outline" onclick="exportJ()" style="margin-bottom:10px;">📤 Export JSON</button>
+    <button class="btn btn-outline" style="color:#EF5350;border-color:#C62828;" onclick="if(confirm('Delete all data?'))clearAll();">🗑️ Clear All Data</button>
     <div class="gap"></div>
   </div>
 </div>
 
-<!-- TOAST -->
+<div id="hist-ov" class="overlay" onclick="closeOv()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">📂 My Reports</div>
+    <div id="hist-list"></div>
+    <button class="btn btn-outline" style="margin-top:12px;" onclick="closeOv()">Close</button>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────────────────
-const S = {
-  currentPage: 'pg-splash',
-  user: null,
-  pin: '',
-  get entries() { return JSON.parse(localStorage.getItem('dk_entries') || '[]'); },
-  set entries(v) { localStorage.setItem('dk_entries', JSON.stringify(v)); },
-  get settings() {
-    return JSON.parse(localStorage.getItem('dk_settings') || JSON.stringify({
-      ownerPin: '0000',
-      mgrPin: '1111',
-      apiUrl: '',
-      ownerName: 'Yeasin Sagor',
-      branches: [
-        'Nadbystrzycka','Turystyczna','Krakowskie Przedmieście',
-        'Branch 4','Branch 5','Branch 6','Branch 7','Branch 8',
-        'Branch 9','Branch 10','Branch 11','Branch 12','Branch 13',
-        'Branch 14','Branch 15','Branch 16','Branch 17','Branch 18',
-        'Branch 19','Branch 20'
-      ]
-    }));
-  },
-  set settings(v) { localStorage.setItem('dk_settings', JSON.stringify(v)); }
+const DB={
+  get e(){return JSON.parse(localStorage.getItem('dk_e')||'[]');},
+  set e(v){localStorage.setItem('dk_e',JSON.stringify(v));},
+  get c(){return JSON.parse(localStorage.getItem('dk_c')||JSON.stringify({op:'0000',mp:'1111',url:'',br:['Nadbystrzycka','Turystyczna','Krakowskie Przedmieście','Branch 4','Branch 5','Branch 6','Branch 7','Branch 8','Branch 9','Branch 10','Branch 11','Branch 12','Branch 13','Branch 14','Branch 15','Branch 16','Branch 17','Branch 18','Branch 19','Branch 20']}));},
+  set c(v){localStorage.setItem('dk_c',JSON.stringify(v));}
 };
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-const todayStr = () => new Date().toISOString().split('T')[0];
-const fmt = n => 'PLN ' + (parseFloat(n)||0).toLocaleString('pl-PL', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtK = n => { const v = parseFloat(n)||0; return v >= 1000 ? 'PLN '+(v/1000).toFixed(1)+'k' : fmt(n); };
-const getVal = id => parseFloat(document.getElementById(id)?.value)||0;
-const uid = () => Math.random().toString(36).substr(2,9) + Date.now().toString(36);
+let U=null,PB='';
+const td=()=>new Date().toISOString().split('T')[0];
+const tdL=()=>new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const mp=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');};
+const f=n=>'PLN '+(parseFloat(n)||0).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fk=n=>{const v=parseFloat(n)||0;return v>=1000?'PLN '+(v/1000).toFixed(1)+'k':f(n);};
+const gv=id=>parseFloat(document.getElementById(id)?.value)||0;
+const el=id=>document.getElementById(id);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 
-function todayFull() {
-  return new Date().toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-}
-
-function monthStr() {
-  return new Date().toLocaleDateString('en-GB', {month:'long', year:'numeric'});
-}
-
-// ─── NAVIGATION ──────────────────────────────────────────────────────────────
-function goto(pageId) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-  S.currentPage = pageId;
+function go(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  el(p).classList.add('active');
   window.scrollTo(0,0);
-  if (pageId === 'pg-manager') refreshManager();
-  if (pageId === 'pg-owner') refreshOwner();
-  if (pageId === 'pg-entry') initEntry();
-  if (pageId === 'pg-settings') initSettings();
+  if(p==='pg-manager')loadMgr();
+  if(p==='pg-owner')loadOwner();
+  if(p==='pg-entry')initEntry();
+  if(p==='pg-settings')initSet();
 }
 
-// ─── SPLASH ───────────────────────────────────────────────────────────────────
-// Auto advance splash
-function startApp() { goto('pg-login'); initLogin(); }
-setTimeout(startApp, 2000);
-document.getElementById('pg-splash').addEventListener('click', startApp);
+function goLogin(){loadBr();go('pg-login');}
 
-// ─── LOGIN ────────────────────────────────────────────────────────────────────
-function initLogin() {
-  const sel = document.getElementById('loginBranch');
-  sel.innerHTML = '<option value="">Select Branch...</option>';
-  S.settings.branches.forEach(b => {
-    const o = document.createElement('option');
-    o.value = b; o.textContent = b;
-    sel.appendChild(o);
-  });
+function loadBr(){
+  const s=el('sel-branch');
+  s.innerHTML='<option value="">Select branch...</option>';
+  DB.c.br.forEach(b=>{const o=document.createElement('option');o.value=o.textContent=b;s.appendChild(o);});
 }
 
-function pinPress(key) {
-  const err = document.getElementById('loginError');
-  err.style.display = 'none';
-  if (key === 'C') { S.pin = ''; }
-  else if (key === '⌫') { S.pin = S.pin.slice(0,-1); }
-  else if (S.pin.length < 4) { S.pin += key; }
-  updatePinDots();
-  if (S.pin.length === 4) setTimeout(tryLogin, 100);
+function pin(k){
+  el('pin-err').style.display='none';
+  if(k==='C')PB='';
+  else if(k==='X')PB=PB.slice(0,-1);
+  else if(PB.length<4)PB+=k;
+  for(let i=0;i<4;i++)el('pd'+i).classList.toggle('filled',i<PB.length);
+  if(PB.length===4)setTimeout(tryLogin,120);
 }
 
-function updatePinDots() {
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('d'+i).classList.toggle('filled', i < S.pin.length);
+function tryLogin(){
+  const c=DB.c,br=el('sel-branch').value,nm=el('inp-name').value.trim();
+  if(PB===c.op){U={role:'owner',name:'Yeasin Sagor',branch:'All'};PB='';for(let i=0;i<4;i++)el('pd'+i).classList.remove('filled');go('pg-owner');return;}
+  if(PB===c.mp){
+    if(!br){toast('Select branch','err');PB='';for(let i=0;i<4;i++)el('pd'+i).classList.remove('filled');return;}
+    if(!nm){toast('Enter your name','err');PB='';for(let i=0;i<4;i++)el('pd'+i).classList.remove('filled');return;}
+    U={role:'manager',name:nm,branch:br};PB='';for(let i=0;i<4;i++)el('pd'+i).classList.remove('filled');go('pg-manager');return;
   }
+  PB='';for(let i=0;i<4;i++)el('pd'+i).classList.remove('filled');
+  el('pin-err').style.display='block';
 }
 
-function tryLogin() {
-  const cfg = S.settings;
-  const branch = document.getElementById('loginBranch').value;
-  const name = document.getElementById('loginName').value.trim();
+function doLogout(){U=null;PB='';el('sel-branch').value='';el('inp-name').value='';el('pin-err').style.display='none';goLogin();}
 
-  if (S.pin === cfg.ownerPin) {
-    S.user = { role:'owner', name: cfg.ownerName || 'Yeasin Sagor', branch:'All Branches', pin: S.pin };
-    S.pin = '';
-    updatePinDots();
-    goto('pg-owner');
-    return;
-  }
-
-  if (S.pin === cfg.mgrPin) {
-    if (!branch) { showToast('Please select your branch', 'error'); S.pin=''; updatePinDots(); return; }
-    if (!name) { showToast('Please enter your name', 'error'); S.pin=''; updatePinDots(); return; }
-    S.user = { role:'manager', name: name || 'Manager', branch, pin: S.pin };
-    S.pin = ''; updatePinDots();
-    goto('pg-manager');
-    return;
-  }
-
-  S.pin = ''; updatePinDots();
-  document.getElementById('loginError').style.display = 'block';
+function loadMgr(){
+  if(!U)return;
+  const t=td(),mine=DB.e.filter(e=>e.date===t&&e.branch===U.branch);
+  const rev=mine.reduce((s,e)=>s+e.totalRevenue,0),profit=mine.reduce((s,e)=>s+e.netProfit,0);
+  el('m-title').textContent=U.branch;el('m-sub').textContent=tdL();
+  el('m-hi').textContent='Hi, '+U.name.split(' ')[0]+'!';el('m-branch').textContent=U.branch;el('m-date').textContent=tdL();
+  el('m-rev').textContent=fk(rev);el('m-profit').textContent=fk(profit);
+  el('m-profit').className='stat-value '+(profit>=0?'green':'red');
+  el('m-ok').style.display=mine.length?'flex':'none';
+  el('m-hint').textContent=mine.length?'✅ Already submitted today':'Enter today\'s cash data';
 }
 
-function logout() {
-  S.user = null;
-  S.pin = '';
-  updatePinDots();
-  document.getElementById('loginBranch').value = '';
-  document.getElementById('loginName').value = '';
-  document.getElementById('loginError').style.display = 'none';
-  initLogin();
-  goto('pg-login');
+function initEntry(){
+  if(!U)return;
+  el('e-date').textContent=tdL();el('e-badge').textContent=U.branch;calc();
 }
 
-// ─── MANAGER ─────────────────────────────────────────────────────────────────
-function refreshManager() {
-  if (!S.user) return;
-  const today = todayStr();
-  document.getElementById('mgr-branch-title').textContent = S.user.branch;
-  document.getElementById('mgr-date-title').textContent = todayFull();
-  document.getElementById('mgr-name').textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '!';
-  document.getElementById('mgr-branch-sub').textContent = S.user.branch;
-  document.getElementById('mgr-today-date').textContent = todayFull();
-
-  const todayEntries = S.entries.filter(e => e.date === today && e.branch === S.user.branch);
-  const rev = todayEntries.reduce((s,e) => s+e.totalRevenue, 0);
-  const profit = todayEntries.reduce((s,e) => s+e.netProfit, 0);
-
-  document.getElementById('mgr-today-rev').textContent = fmtK(rev);
-  const profEl = document.getElementById('mgr-today-profit');
-  profEl.textContent = fmtK(profit);
-  profEl.className = 'stat-value ' + (profit >= 0 ? 'green' : 'red');
-
-  const submitted = todayEntries.length > 0;
-  document.getElementById('mgr-submitted-banner').style.display = submitted ? 'block' : 'none';
-  document.getElementById('mgr-entry-sub').textContent = submitted ? '✅ Already submitted today — edit?' : 'Tap to enter today\'s cash data';
+function calc(){
+  const pc=gv('e-pc'),pk=gv('e-pk'),pos=pc+pk;
+  const ub=gv('e-ub'),bo=gv('e-bo'),gl=gv('e-gl'),doo=gv('e-do'),del=ub+bo+gl+doo;
+  const rev=pos+del;
+  const st=gv('e-st'),su=gv('e-su'),re=gv('e-re'),ut=gv('e-ut'),oe=gv('e-oe'),exp=st+su+re+ut+oe;
+  const profit=rev-exp;
+  el('t-pos').textContent=f(pos);el('t-del').textContent=f(del);el('t-rev').textContent=f(rev);
+  el('t-exp').textContent=f(exp);el('t-profit').textContent=f(profit);
+  el('pb').className='profit-banner '+(profit>=0?'pb-profit':'pb-loss');
+  el('pb-lbl').textContent=profit>=0?'✅ Net Profit':'❌ Net Loss';
 }
 
-// ─── DAILY ENTRY ─────────────────────────────────────────────────────────────
-function initEntry() {
-  if (!S.user) return;
-  document.getElementById('entry-date-sub').textContent = todayFull();
-  document.getElementById('entry-branch-badge').textContent = S.user.branch;
-  calcTotals();
+function submitReport(){
+  const btn=el('sub-btn');btn.textContent='⏳ Saving...';btn.disabled=true;
+  const pc=gv('e-pc'),pk=gv('e-pk'),pos=pc+pk;
+  const ub=gv('e-ub'),bo=gv('e-bo'),gl=gv('e-gl'),doo=gv('e-do'),del=ub+bo+gl+doo;
+  const rev=pos+del;
+  const st=gv('e-st'),su=gv('e-su'),re=gv('e-re'),ut=gv('e-ut'),oe=gv('e-oe'),exp=st+su+re+ut+oe;
+  const profit=rev-exp;
+  const entry={id:uid(),date:td(),branch:U.branch,manager:U.name,openingCash:gv('e-open'),closingCash:gv('e-close'),posCash:pc,posCard:pk,posTotal:pos,uberEats:ub,boltFood:bo,glovo:gl,otherDelivery:doo,delTotal:del,totalRevenue:rev,staffCost:st,supplies:su,rent:re,utilities:ut,otherExpenses:oe,totalExpenses:exp,netProfit:profit,notes:el('e-notes').value,submittedAt:new Date().toISOString()};
+  const all=DB.e;all.push(entry);DB.e=all;
+  const url=DB.c.url;
+  if(url)fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(entry)}).catch(()=>{});
+  el('suc-sub').textContent=U.branch+' · '+tdL();
+  el('suc-stats').innerHTML=`<div class="srow"><span style="color:#9E9E9E">POS</span><span style="font-weight:700;color:#43A047">${f(pos)}</span></div><div class="srow"><span style="color:#9E9E9E">Delivery</span><span style="font-weight:700;color:#43A047">${f(del)}</span></div><div class="srow"><span style="color:#9E9E9E">Total Revenue</span><span style="font-weight:800;color:#43A047;font-size:16px">${f(rev)}</span></div><div class="srow"><span style="color:#9E9E9E">Expenses</span><span style="font-weight:700;color:#EF5350">${f(exp)}</span></div><div class="srow"><span style="color:#9E9E9E">Net ${profit>=0?'Profit':'Loss'}</span><span style="font-weight:800;font-size:16px;color:${profit>=0?'#43A047':'#EF5350'}">${f(profit)}</span></div>`;
+  ['e-open','e-close','e-pc','e-pk','e-ub','e-bo','e-gl','e-do','e-st','e-su','e-re','e-ut','e-oe'].forEach(id=>{const e=el(id);if(e)e.value='';});
+  el('e-notes').value='';calc();
+  btn.textContent='✅ Submit Daily Report';btn.disabled=false;
+  go('pg-success');
 }
 
-function calcTotals() {
-  const posCash = getVal('f-pos-cash');
-  const posCard = getVal('f-pos-card');
-  const posTotal = posCash + posCard;
+function openHist(){
+  const mine=DB.e.filter(e=>e.branch===U?.branch).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+  el('hist-list').innerHTML=!mine.length?'<div style="text-align:center;color:#555;padding:20px;">No reports yet</div>':mine.map(e=>`<div style="padding:12px 0;border-bottom:1px solid #2C2C2C;"><div style="display:flex;justify-content:space-between;"><span style="font-weight:700;">${e.date}</span><span style="font-weight:800;color:#43A047;">${f(e.totalRevenue)}</span></div><div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="font-size:12px;color:#555;">Exp: ${f(e.totalExpenses)}</span><span style="font-size:12px;font-weight:700;color:${e.netProfit>=0?'#43A047':'#EF5350'}">${e.netProfit>=0?'+':''}${f(e.netProfit)}</span></div></div>`).join('');
+  el('hist-ov').classList.add('open');
+}
+function closeOv(){el('hist-ov').classList.remove('open');}
 
-  const uber = getVal('f-uber');
-  const bolt = getVal('f-bolt');
-  const glovo = getVal('f-glovo');
-  const delOther = getVal('f-del-other');
-  const delTotal = uber + bolt + glovo + delOther;
-
-  const totalRev = posTotal + delTotal;
-
-  const staff = getVal('f-staff');
-  const supply = getVal('f-supply');
-  const rent = getVal('f-rent');
-  const util = getVal('f-util');
-  const otherExp = getVal('f-other-exp');
-  const totalExp = staff + supply + rent + util + otherExp;
-
-  const profit = totalRev - totalExp;
-
-  document.getElementById('t-pos').textContent = fmt(posTotal);
-  document.getElementById('t-del').textContent = fmt(delTotal);
-  document.getElementById('t-rev').textContent = fmt(totalRev);
-  document.getElementById('t-exp').textContent = fmt(totalExp);
-  document.getElementById('t-profit').textContent = fmt(profit);
-
-  const banner = document.getElementById('profit-banner');
-  const label = document.getElementById('profit-label');
-  banner.className = 'profit-banner ' + (profit >= 0 ? 'profit' : 'loss');
-  label.textContent = profit >= 0 ? '✅ Net Profit' : '❌ Net Loss';
+function loadOwner(){
+  el('o-date').textContent=tdL();
+  const t=td(),all=DB.e,todE=all.filter(e=>e.date===t);
+  const rev=todE.reduce((s,e)=>s+e.totalRevenue,0),exp=todE.reduce((s,e)=>s+e.totalExpenses,0),profit=rev-exp;
+  const brs=DB.c.br,rep=[...new Set(todE.map(e=>e.branch))],miss=brs.filter(b=>!rep.includes(b));
+  el('o-rev').textContent=fk(rev);el('o-exp').textContent=fk(exp);
+  el('o-profit').textContent=fk(profit);el('o-profit').className='stat-value '+(profit>=0?'green':'red');
+  el('o-rep').textContent=rep.length+'/'+brs.length;
+  if(miss.length){el('o-miss').style.display='block';el('o-miss-list').textContent=miss.join(' · ');}
+  else el('o-miss').style.display='none';
+  el('o-list').innerHTML=!todE.length?'<div style="text-align:center;color:#555;padding:24px;background:#181818;border-radius:12px;border:1px solid #2C2C2C;">No reports today</div>':[...todE].sort((a,b)=>b.totalRevenue-a.totalRevenue).map(e=>`<div class="branch-item"><div class="bdot bdot-g"></div><div class="binfo"><div class="bname">${e.branch}</div><div class="bstats">${e.manager} · POS:${f(e.posTotal)}</div></div><div class="bprofit"><div class="brev">${f(e.totalRevenue)}</div><div class="bpnl" style="color:${e.netProfit>=0?'#43A047':'#EF5350'}">${e.netProfit>=0?'+':''}${f(e.netProfit)}</div></div></div>`).join('');
+  const pfx=mp(),mE=all.filter(e=>e.date.startsWith(pfx));
+  const mRev=mE.reduce((s,e)=>s+e.totalRevenue,0),mExp=mE.reduce((s,e)=>s+e.totalExpenses,0),mP=mRev-mExp;
+  el('om-rev').textContent=fk(mRev);el('om-exp').textContent=fk(mExp);el('om-cnt').textContent=mE.length;
+  el('om-profit').textContent=fk(mP);el('om-profit').className='stat-value '+(mP>=0?'green':'red');
+  const dmap={};mE.forEach(e=>{dmap[e.date]=(dmap[e.date]||0)+e.totalRevenue;});
+  const days=Object.keys(dmap).sort();
+  if(days.length){const max=Math.max(...Object.values(dmap));el('m-chart').innerHTML=days.map(d=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:11px;color:#555;width:24px;">${d.slice(8)}</span><div style="flex:1;height:18px;background:#222;border-radius:4px;overflow:hidden;"><div style="width:${Math.round((dmap[d]/max)*100)}%;height:100%;background:#C62828;border-radius:4px;"></div></div><span style="font-size:11px;color:#9E9E9E;width:70px;text-align:right;">${fk(dmap[d])}</span></div>`).join('');}
+  el('o-branches').innerHTML=brs.map(b=>{const te=all.filter(e=>e.date===t&&e.branch===b),me=all.filter(e=>e.date.startsWith(pfx)&&e.branch===b),tr=te.reduce((s,e)=>s+e.totalRevenue,0),mr=me.reduce((s,e)=>s+e.totalRevenue,0),mp2=me.reduce((s,e)=>s+e.netProfit,0),done=te.length>0;return`<div class="branch-item"><div class="bdot ${done?'bdot-g':'bdot-y'}"></div><div class="binfo"><div class="bname">${b}</div><div class="bstats">${done?'Reported':'Not reported'} · Month:${fk(mr)}</div></div><div class="bprofit"><div class="brev">${done?f(tr):'—'}</div><div class="bpnl" style="color:${mp2>=0?'#43A047':'#EF5350'}">${mp2>=0?'+':''}${fk(mp2)}</div></div></div>`;}).join('');
 }
 
-function submitEntry() {
-  const btn = document.getElementById('submitBtn');
-  btn.textContent = '⏳ Saving...';
-  btn.disabled = true;
-
-  const posCash = getVal('f-pos-cash');
-  const posCard = getVal('f-pos-card');
-  const posTotal = posCash + posCard;
-  const uber = getVal('f-uber');
-  const bolt = getVal('f-bolt');
-  const glovo = getVal('f-glovo');
-  const delOther = getVal('f-del-other');
-  const delTotal = uber + bolt + glovo + delOther;
-  const totalRevenue = posTotal + delTotal;
-  const staffCost = getVal('f-staff');
-  const supplies = getVal('f-supply');
-  const rent = getVal('f-rent');
-  const utilities = getVal('f-util');
-  const otherExpenses = getVal('f-other-exp');
-  const totalExpenses = staffCost + supplies + rent + utilities + otherExpenses;
-  const netProfit = totalRevenue - totalExpenses;
-
-  const entry = {
-    id: uid(),
-    date: todayStr(),
-    branch: S.user.branch,
-    manager: S.user.name,
-    openingCash: getVal('f-open'),
-    closingCash: getVal('f-close'),
-    posCash, posCard, posTotal,
-    uberEats: uber, boltFood: bolt, glovo, otherDelivery: delOther, delTotal,
-    staffCost, supplies, rent, utilities, otherExpenses,
-    totalRevenue, totalExpenses, netProfit,
-    notes: document.getElementById('f-notes').value,
-    submittedAt: new Date().toISOString()
-  };
-
-  const entries = S.entries;
-  entries.push(entry);
-  S.entries = entries;
-
-  // Show success
-  document.getElementById('success-branch-name').textContent = S.user.branch + ' — ' + todayFull();
-  document.getElementById('success-stats').innerHTML = `
-    <div class="success-stat-row"><span class="s-label">POS Revenue</span><span class="s-value" style="color:var(--green-l)">${fmt(posTotal)}</span></div>
-    <div class="success-stat-row"><span class="s-label">Delivery Revenue</span><span class="s-value" style="color:var(--green-l)">${fmt(delTotal)}</span></div>
-    <div class="success-stat-row"><span class="s-label">Total Revenue</span><span class="s-value" style="color:var(--green-l);font-size:16px;">${fmt(totalRevenue)}</span></div>
-    <div class="success-stat-row"><span class="s-label">Total Expenses</span><span class="s-value" style="color:var(--red-l)">${fmt(totalExpenses)}</span></div>
-    <div class="success-stat-row"><span class="s-label">Net ${netProfit>=0?'Profit':'Loss'}</span><span class="s-value" style="color:${netProfit>=0?'var(--green-l)':'var(--red-l)'};font-size:16px;">${fmt(netProfit)}</span></div>
-  `;
-
-  // Try sync to Google Sheets
-  const apiUrl = S.settings.apiUrl;
-  if (apiUrl) syncToSheets(entry, apiUrl);
-
-  // Reset form
-  ['f-open','f-close','f-pos-cash','f-pos-card','f-uber','f-bolt','f-glovo','f-del-other','f-staff','f-supply','f-rent','f-util','f-other-exp'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('f-notes').value = '';
-  calcTotals();
-  btn.textContent = '✅ Submit Daily Report';
-  btn.disabled = false;
-
-  goto('pg-success');
+function oTab(i,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
+  [0,1,2].forEach(j=>el('op'+j).style.display=j===i?'block':'none');
 }
 
-async function syncToSheets(entry, url) {
-  try {
-    await fetch(url, {
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(entry)
-    });
-    showToast('Synced to Google Sheets ✅', 'success');
-  } catch(e) {
-    console.log('Sync failed', e);
-  }
+function initSet(){const c=DB.c;el('s-op').value=c.op;el('s-mp').value=c.mp;el('s-url').value=c.url||'';el('s-br').value=c.br.join('\n');}
+function savePins(){const c=DB.c,o=el('s-op').value,m=el('s-mp').value;if(o.length!==4||m.length!==4){toast('PINs must be 4 digits','err');return;}c.op=o;c.mp=m;DB.c=c;toast('PINs saved ✅','ok');}
+function saveBr(){const c=DB.c;c.br=el('s-br').value.split('\n').map(b=>b.trim()).filter(Boolean);DB.c=c;loadBr();toast('Branches saved ✅','ok');}
+function saveUrl(){const c=DB.c;c.url=el('s-url').value.trim();DB.c=c;toast('URL saved ✅','ok');}
+function settingsBack(){if(U?.role==='owner')go('pg-owner');else if(U?.role==='manager')go('pg-manager');else goLogin();}
+function exportJ(){const b=new Blob([JSON.stringify(DB.e,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='doatana_'+td()+'.json';a.click();toast('Exported ✅','ok');}
+function clearAll(){localStorage.removeItem('dk_e');toast('Cleared','ok');if(U?.role==='owner')loadOwner();}
+
+function toast(msg,type=''){
+  const t=el('toast');t.textContent=msg;
+  t.className='toast show'+(type==='ok'?' tok':type==='err'?' terr':'');
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// ─── HISTORY ─────────────────────────────────────────────────────────────────
-function showHistory() {
-  const myEntries = S.entries
-    .filter(e => e.branch === S.user?.branch)
-    .sort((a,b) => b.date.localeCompare(a.date))
-    .slice(0,30);
-
-  const list = document.getElementById('history-list');
-  if (myEntries.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:var(--dim);padding:24px;">No reports yet</div>';
-  } else {
-    list.innerHTML = myEntries.map(e => `
-      <div style="padding:12px 0;border-bottom:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div style="font-weight:700;font-size:14px;">${e.date}</div>
-          <div style="font-family:'Bebas Neue';font-size:18px;color:var(--green-l)">${fmt(e.totalRevenue)}</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">
-          <div style="font-size:12px;color:var(--dim);">Expenses: ${fmt(e.totalExpenses)}</div>
-          <div style="font-size:12px;font-weight:700;color:${e.netProfit>=0?'var(--green-l)':'var(--red-l)'};">
-            ${e.netProfit>=0?'+':''}${fmt(e.netProfit)}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-  document.getElementById('historyModal').classList.add('open');
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-// ─── OWNER DASHBOARD ─────────────────────────────────────────────────────────
-let revenueChartInst = null;
-
-function refreshOwner() {
-  document.getElementById('owner-date').textContent = todayFull();
-  renderOwnerToday();
-  renderOwnerMonth();
-  renderOwnerBranches();
-}
-
-function ownerTab(tab) {
-  document.querySelectorAll('#ownerTabs .tab').forEach((t,i) => {
-    t.classList.toggle('active', ['today','month','branches'][i] === tab);
-  });
-  document.getElementById('tab-today').style.display = tab==='today'?'block':'none';
-  document.getElementById('tab-month').style.display = tab==='month'?'block':'none';
-  document.getElementById('tab-branches').style.display = tab==='branches'?'block':'none';
-}
-
-function renderOwnerToday() {
-  const today = todayStr();
-  const todayE = S.entries.filter(e => e.date === today);
-  const rev = todayE.reduce((s,e)=>s+e.totalRevenue,0);
-  const exp = todayE.reduce((s,e)=>s+e.totalExpenses,0);
-  const profit = rev - exp;
-  const branches = S.settings.branches;
-  const reported = [...new Set(todayE.map(e=>e.branch))];
-  const missing = branches.filter(b => !reported.includes(b));
-
-  document.getElementById('o-today-rev').textContent = fmtK(rev);
-  document.getElementById('o-today-exp').textContent = fmtK(exp);
-  const profEl = document.getElementById('o-today-profit');
-  profEl.textContent = fmtK(profit);
-  profEl.className = 'stat-value ' + (profit>=0?'green':'red');
-  document.getElementById('o-reported').textContent = reported.length + '/' + branches.length;
-
-  const missingEl = document.getElementById('missing-branches');
-  if (missing.length > 0) {
-    missingEl.style.display = 'block';
-    document.getElementById('missing-list').textContent = missing.join(' · ');
-  } else {
-    missingEl.style.display = 'none';
-  }
-
-  const entryList = document.getElementById('today-entries-list');
-  if (todayE.length === 0) {
-    entryList.innerHTML = '<div style="text-align:center;color:var(--dim);padding:24px;background:var(--card);border-radius:var(--r);border:1px solid var(--border);">No reports submitted today</div>';
-  } else {
-    const sorted = [...todayE].sort((a,b) => b.totalRevenue - a.totalRevenue);
-    entryList.innerHTML = sorted.map(e => `
-      <div class="branch-item">
-        <div class="branch-dot reported"></div>
-        <div class="branch-info">
-          <div class="branch-name">${e.branch}</div>
-          <div class="branch-stats">${e.manager} · POS: ${fmt(e.posTotal)} · Del: ${fmt(e.delTotal||0)}</div>
-        </div>
-        <div class="branch-profit">
-          <div class="branch-rev">${fmt(e.totalRevenue)}</div>
-          <div class="branch-pnl" style="color:${e.netProfit>=0?'var(--green-l)':'var(--red-l)'};">${e.netProfit>=0?'+':''}${fmt(e.netProfit)}</div>
-        </div>
-      </div>
-    `).join('');
-  }
-}
-
-function renderOwnerMonth() {
-  const now = new Date();
-  const prefix = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-  const monthE = S.entries.filter(e => e.date.startsWith(prefix));
-  const rev = monthE.reduce((s,e)=>s+e.totalRevenue,0);
-  const exp = monthE.reduce((s,e)=>s+e.totalExpenses,0);
-  const profit = rev - exp;
-
-  document.getElementById('o-month-rev').textContent = fmtK(rev);
-  document.getElementById('o-month-exp').textContent = fmtK(exp);
-  document.getElementById('o-month-count').textContent = monthE.length;
-  const mpEl = document.getElementById('o-month-profit');
-  mpEl.textContent = fmtK(profit);
-  mpEl.className = 'stat-value '+(profit>=0?'green':'red');
-
-  // Chart
-  const dailyMap = {};
-  monthE.forEach(e => { dailyMap[e.date] = (dailyMap[e.date]||0) + e.totalRevenue; });
-  const labels = Object.keys(dailyMap).sort();
-  const data = labels.map(l => dailyMap[l]);
-
-  setTimeout(() => {
-    const ctx = document.getElementById('revenueChart');
-    if (!ctx) return;
-    if (revenueChartInst) revenueChartInst.destroy();
-    revenueChartInst = new Chart(ctx, {
-      type:'line',
-      data:{
-        labels: labels.map(l => l.slice(8)),
-        datasets:[{
-          data,
-          borderColor:'#C62828',
-          backgroundColor:'rgba(198,40,40,0.1)',
-          fill:true,
-          tension:0.4,
-          pointRadius:3,
-          pointBackgroundColor:'#C62828'
-        }]
-      },
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#757575',font:{size:10}}},
-          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#757575',font:{size:10},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}
-        }
-      }
-    });
-  }, 100);
-}
-
-function renderOwnerBranches() {
-  const today = todayStr();
-  const now = new Date();
-  const prefix = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-  const allEntries = S.entries;
-
-  const html = S.settings.branches.map(branch => {
-    const todayE = allEntries.filter(e => e.date===today && e.branch===branch);
-    const monthE = allEntries.filter(e => e.date.startsWith(prefix) && e.branch===branch);
-    const todayRev = todayE.reduce((s,e)=>s+e.totalRevenue,0);
-    const monthRev = monthE.reduce((s,e)=>s+e.totalRevenue,0);
-    const monthProfit = monthE.reduce((s,e)=>s+e.netProfit,0);
-    const reported = todayE.length > 0;
-
-    return `
-      <div class="branch-item">
-        <div class="branch-dot ${reported?'reported':'pending'}"></div>
-        <div class="branch-info">
-          <div class="branch-name">${branch}</div>
-          <div class="branch-stats">${reported?'Reported today':'Not reported'} · Month: ${fmtK(monthRev)}</div>
-        </div>
-        <div class="branch-profit">
-          <div class="branch-rev">${reported?fmt(todayRev):'—'}</div>
-          <div class="branch-pnl" style="color:${monthProfit>=0?'var(--green-l)':'var(--red-l)'};">
-            ${monthProfit>=0?'+':''}${fmtK(monthProfit)}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  document.getElementById('branches-list').innerHTML = html;
-}
-
-// ─── SETTINGS ─────────────────────────────────────────────────────────────────
-function initSettings() {
-  const cfg = S.settings;
-  document.getElementById('s-api-url').value = cfg.apiUrl || '';
-  document.getElementById('s-owner-pin').value = cfg.ownerPin || '0000';
-  document.getElementById('s-mgr-pin').value = cfg.mgrPin || '1111';
-  document.getElementById('s-branches').value = cfg.branches.join('\n');
-}
-
-function saveApiUrl() {
-  const cfg = S.settings;
-  cfg.apiUrl = document.getElementById('s-api-url').value.trim();
-  S.settings = cfg;
-  showToast('API URL saved ✅', 'success');
-}
-
-function savePins() {
-  const cfg = S.settings;
-  const op = document.getElementById('s-owner-pin').value;
-  const mp = document.getElementById('s-mgr-pin').value;
-  if (op.length !== 4 || mp.length !== 4) { showToast('PINs must be 4 digits', 'error'); return; }
-  cfg.ownerPin = op;
-  cfg.mgrPin = mp;
-  S.settings = cfg;
-  showToast('PINs updated ✅', 'success');
-}
-
-function saveBranches() {
-  const cfg = S.settings;
-  cfg.branches = document.getElementById('s-branches').value.split('\n').map(b=>b.trim()).filter(b=>b);
-  S.settings = cfg;
-  showToast('Branches saved ✅', 'success');
-  initLogin();
-}
-
-function settingsBack() {
-  if (S.user?.role === 'owner') goto('pg-owner');
-  else if (S.user?.role === 'manager') goto('pg-manager');
-  else goto('pg-login');
-}
-
-function exportData() {
-  const data = JSON.stringify(S.entries, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'doatana_reports_' + todayStr() + '.json';
-  a.click();
-  showToast('Data exported ✅', 'success');
-}
-
-function clearData() {
-  localStorage.removeItem('dk_entries');
-  showToast('Data cleared', 'success');
-  refreshOwner();
-}
-
-// ─── TOAST ────────────────────────────────────────────────────────────────────
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-initLogin();
-</script>
-
-<!-- SERVICE WORKER REGISTRATION -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  });
-}
+window.onload=function(){
+  loadBr();
+  el('pg-splash').addEventListener('click',goLogin);
+  setTimeout(goLogin,1500);
+};
 </script>
 </body>
 </html>
