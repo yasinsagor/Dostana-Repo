@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fix App</title>
+<style>
+body{background:#2A1A05;color:#F5A623;font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;padding:20px;}
+.box{max-width:320px;}
+h2{font-size:22px;margin-bottom:10px;}
+p{font-size:13px;opacity:.8;margin-bottom:20px;}
+#status{font-size:14px;font-weight:700;margin:20px 0;min-height:24px;}
+a{display:block;background:#D4890A;color:#fff;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="box">
+  <div style="font-size:48px;margin-bottom:16px;">🔧</div>
+  <h2>Fixing Dostana Manager...</h2>
+  <p>Clearing old cache and reloading fresh version</p>
+  <div id="status">⏳ Working...</div>
+  <a href="/Dostana-Repo/index.html" id="go-btn" style="display:none;">▶ Open App</a>
+</div>
+<script>
+async function fix(){
+  var status=document.getElementById('status');
+  var btn=document.getElementById('go-btn');
+  try{
+    // 1. Unregister all service workers
+    if('serviceWorker' in navigator){
+      var regs=await navigator.serviceWorker.getRegistrations();
+      for(var r of regs){ await r.unregister(); }
+      status.textContent='✅ Service workers removed ('+regs.length+')';
+    }
+    // 2. Clear all caches
+    if('caches' in window){
+      var keys=await caches.keys();
+      for(var k of keys){ await caches.delete(k); }
+      status.textContent='✅ Cache cleared ('+keys.length+' caches)';
+    }
+    // 3. Clear localStorage only if needed
+    // localStorage.clear(); // commented out - keeps your settings
+    
+    await new Promise(function(r){setTimeout(r,1000);});
+    status.textContent='✅ All done! Tap the button below';
+    btn.style.display='block';
+  }catch(e){
+    status.textContent='Error: '+e.message+' — try clearing Chrome data manually';
+    btn.style.display='block';
+  }
+}
+fix();
+</script>
+</body>
+</html>
