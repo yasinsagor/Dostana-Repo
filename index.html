@@ -4320,6 +4320,12 @@ function renderCFDash(){
             +'style="background:#FFF4E0;border:1.5px solid var(--primary);border-radius:8px;padding:6px 10px;'
             +'font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;line-height:1.3;text-align:center;">⚙️ Add<br>Desc</button>';
         }
+        if(hasCF&&e.id){
+          html+='<button data-eid="'+e.id+'" onclick="editCFReport(this.dataset.eid)" '
+            +'style="background:#E3F2FD;border:1.5px solid #90CAF9;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:700;color:#1565C0;cursor:pointer;line-height:1.3;text-align:center;margin-left:4px;">✏️<br>Edit</button>';
+          html+='<button data-eid="'+e.id+'" data-type="cashflow" onclick="deleteReport(this.dataset.eid,this.dataset.type,renderCFDash)" '
+            +'style="background:#FFF5F5;border:1.5px solid #FFCDD2;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:700;color:var(--r);cursor:pointer;line-height:1.3;text-align:center;margin-left:4px;">🗑️<br>Del</button>';
+        }
         html+='</div></div>';
         if(dayExps.length>0){
           html+='<div style="padding:7px 11px;background:#fff;">';
@@ -8078,6 +8084,230 @@ async function deleteReport(entryId, type, refreshFn){
 }
 
 // ══════════════════════════════════════════════════════════════
+// OWNER EDIT / DELETE FOR DAILY REPORTS, CASHFLOW & SPEC ORDERS
+// ══════════════════════════════════════════════════════════════
+
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function editDailyReport(id){
+  var e=getEntries().find(function(x){return x.id===id;});
+  if(!e){toast('Report not found','err');return;}
+  var delivPlats=[['wolt','Wolt'],['glovo','Glovo'],['uber','Uber'],['bolt','Bolt'],['pyszne','Pyszne'],['repos','Restaumatic']];
+  var wHtml=(e.wydatki||[]).map(function(w,i){
+    return '<div style="display:flex;gap:6px;margin-bottom:5px;">'
+      +'<input value="'+escH(w.cel||'')+'" id="edr-wcel-'+i+'" placeholder="Purpose" style="flex:2;border:1px solid #ddd;border-radius:6px;padding:7px;font-size:11px;font-family:inherit;">'
+      +'<input type="number" value="'+(w.kwota||0)+'" id="edr-wamt-'+i+'" min="0" placeholder="PLN" style="flex:1;border:1px solid #ddd;border-radius:6px;padding:7px;font-size:11px;font-family:inherit;">'
+      +'</div>';
+  }).join('');
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow-y:auto;padding:16px;display:flex;align-items:flex-start;justify-content:center;';
+  d.innerHTML='<div style="background:#fff;border-radius:18px;padding:20px;width:100%;max-width:460px;margin:auto;">'
+    +'<div style="font-size:15px;font-weight:900;margin-bottom:2px;">✏️ Edit Daily Report</div>'
+    +'<div style="font-size:11px;color:#888;margin-bottom:14px;">'+escH(e.date)+' · '+escH(e.branch)+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">'
+    +[['utarg','Revenue','#2E7D32'],['karta','Card','#1565C0'],['gotowka','Cash','#555']].map(function(f){
+      return '<div><label style="font-size:9px;font-weight:800;color:'+f[2]+';text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px;">'+f[1]+'</label>'
+        +'<input type="number" id="edr-'+f[0]+'" value="'+(e[f[0]]||0)+'" min="0" style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:8px;font-size:14px;font-weight:700;font-family:inherit;"></div>';
+    }).join('')+'</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">🛵 Delivery Platforms</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">'
+    +delivPlats.map(function(p){
+      return '<div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:2px;">'+p[1]+'</label>'
+        +'<input type="number" id="edr-'+p[0]+'" value="'+(e[p[0]]||0)+'" min="0" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px;font-family:inherit;"></div>';
+    }).join('')+'</div>'
+    +(e.wydatki&&e.wydatki.length?'<div style="font-size:9px;font-weight:800;color:var(--r);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">💸 Expenses</div><div>'+wHtml+'</div>':'')
+    +'<label style="font-size:9px;font-weight:800;color:#666;text-transform:uppercase;letter-spacing:.5px;display:block;margin-top:10px;margin-bottom:4px;">📝 Notes</label>'
+    +'<textarea id="edr-notes" rows="2" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">'+escH(e.notes||'')+'</textarea>'
+    +'<div style="display:flex;gap:8px;margin-top:14px;">'
+    +'<button onclick="saveDailyReportEdit(\''+escH(id)+'\')" style="flex:1;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">💾 Save Changes</button>'
+    +'<button onclick="this.closest(\'[style*=fixed]\').remove()" style="flex:1;padding:12px;background:#F5F5F5;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Cancel</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+}
+
+async function saveDailyReportEdit(id){
+  var e=getEntries().find(function(x){return x.id===id;});
+  if(!e){toast('Not found','err');return;}
+  var utarg=parseFloat(document.getElementById('edr-utarg').value)||0;
+  var karta=parseFloat(document.getElementById('edr-karta').value)||0;
+  var gotowka=parseFloat(document.getElementById('edr-gotowka').value)||0;
+  var wolt=parseFloat(document.getElementById('edr-wolt').value)||0;
+  var glovo=parseFloat(document.getElementById('edr-glovo').value)||0;
+  var uber=parseFloat(document.getElementById('edr-uber').value)||0;
+  var bolt=parseFloat(document.getElementById('edr-bolt').value)||0;
+  var pyszne=parseFloat(document.getElementById('edr-pyszne').value)||0;
+  var repos=parseFloat(document.getElementById('edr-repos').value)||0;
+  var notes=(document.getElementById('edr-notes')||{value:''}).value||'';
+  var wyds=[];
+  document.querySelectorAll('[id^="edr-wcel-"]').forEach(function(celEl){
+    var i=celEl.id.replace('edr-wcel-','');
+    var amtEl=document.getElementById('edr-wamt-'+i);
+    var amt=amtEl?parseFloat(amtEl.value)||0:0;
+    if(celEl.value.trim()||amt) wyds.push({cel:celEl.value,kwota:amt});
+  });
+  var totalDel=wolt+glovo+uber+bolt+pyszne+repos;
+  var totalExp=wyds.reduce(function(s,w){return s+(w.kwota||0);},0);
+  var patch={
+    revenue:utarg,card:karta,cash:gotowka,
+    uber_eats:uber,glovo:glovo,pyszne:pyszne,wolt:wolt,bolt:bolt,repos:repos,
+    total_delivery:totalDel,total_revenue:utarg,total_expenses:totalExp,
+    net_profit:utarg-totalExp,wydatki:JSON.stringify(wyds),notes:notes
+  };
+  var saveBtn=document.querySelector('[onclick*="saveDailyReportEdit"]');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving...';}
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/daily_reports?id=eq.'+encodeURIComponent(id),{
+      method:'PATCH',headers:sbHeaders({'Prefer':'return=minimal'}),body:JSON.stringify(patch)
+    });
+    if(r.ok||r.status===204){
+      Object.assign(e,{utarg,karta,gotowka,wolt,glovo,uber,bolt,pyszne,repos,
+        totalDelivery:totalDel,totalRevenue:utarg,totalWydatki:totalExp,
+        netProfit:utarg-totalExp,wydatki:wyds,notes});
+      saveEntries(getEntries());
+      var modal=document.querySelector('[style*="position:fixed"]');
+      if(modal)modal.remove();
+      toast('✅ Daily report updated','ok');
+      renderOwnerDailyReports();
+    } else {
+      if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Save Changes';}
+      toast('Save failed: '+r.status,'err');
+    }
+  }catch(err){
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Save Changes';}
+    toast('Error: '+err.message,'err');
+  }
+}
+
+function editCFReport(id){
+  var e=getEntries().find(function(x){return x.id===id;});
+  if(!e){toast('CF report not found','err');return;}
+  var exps=(e.expenses||[]).filter(function(x){return parseFloat(x.kwota||0)>0;});
+  var expHtml=exps.length?exps.map(function(x,i){
+    var lbl=(x.cat==='Other'||x.cat==='Inne')?(x.custom&&x.custom.trim()?x.custom:x.cat):x.cat;
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;padding:5px 0;border-bottom:1px solid #f0f0f0;">'
+      +'<span style="flex:1;font-size:12px;font-weight:600;color:#555;">'+escH(lbl)+'</span>'
+      +'<input type="number" id="ecf-amt-'+i+'" value="'+(x.kwota||0)+'" min="0" style="width:80px;border:1.5px solid #ddd;border-radius:7px;padding:6px;font-size:13px;font-weight:700;font-family:inherit;text-align:right;">'
+      +'<span style="font-size:10px;color:#888;flex-shrink:0;">PLN</span>'
+      +'</div>';
+  }).join(''):'<div style="font-size:12px;color:#888;padding:8px 0;font-style:italic;">No expenses in this CF report</div>';
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow-y:auto;padding:16px;display:flex;align-items:flex-start;justify-content:center;';
+  d.innerHTML='<div style="background:#fff;border-radius:18px;padding:20px;width:100%;max-width:460px;margin:auto;">'
+    +'<div style="font-size:15px;font-weight:900;margin-bottom:2px;">✏️ Edit Cash Flow Report</div>'
+    +'<div style="font-size:11px;color:#888;margin-bottom:14px;">'+escH(e.date)+' · '+escH(e.branch)+'</div>'
+    +'<div style="font-size:9px;font-weight:800;color:var(--r);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">💸 Expenses</div>'
+    +'<div>'+expHtml+'</div>'
+    +'<label style="font-size:9px;font-weight:800;color:#666;text-transform:uppercase;letter-spacing:.5px;display:block;margin-top:12px;margin-bottom:4px;">📝 Notes</label>'
+    +'<textarea id="ecf-notes" rows="2" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;">'+escH(e.notes||'')+'</textarea>'
+    +'<div style="display:flex;gap:8px;margin-top:14px;">'
+    +'<button onclick="saveCFReportEdit(\''+escH(id)+'\')" style="flex:1;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">💾 Save Changes</button>'
+    +'<button onclick="this.closest(\'[style*=fixed]\').remove()" style="flex:1;padding:12px;background:#F5F5F5;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Cancel</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+}
+
+async function saveCFReportEdit(id){
+  var e=getEntries().find(function(x){return x.id===id;});
+  if(!e){toast('Not found','err');return;}
+  var notes=(document.getElementById('ecf-notes')||{value:''}).value||'';
+  var exps=(e.expenses||[]).filter(function(x){return parseFloat(x.kwota||0)>0;});
+  var newExps=exps.map(function(x,i){
+    var inp=document.getElementById('ecf-amt-'+i);
+    return Object.assign({},x,{kwota:inp?parseFloat(inp.value)||0:x.kwota});
+  });
+  var totalExp=newExps.reduce(function(s,x){return s+(parseFloat(x.kwota)||0);},0);
+  var income=parseFloat(e.gotowkaFromDR||e.totalIncome)||0;
+  var patch={expenses:newExps,total_expenses:totalExp,balance:income-totalExp,notes:notes};
+  var saveBtn=document.querySelector('[onclick*="saveCFReportEdit"]');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving...';}
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/cashflow_reports?id=eq.'+encodeURIComponent(id),{
+      method:'PATCH',headers:sbHeaders({'Prefer':'return=minimal'}),body:JSON.stringify(patch)
+    });
+    if(r.ok||r.status===204){
+      Object.assign(e,{expenses:newExps,totalExpenses:totalExp,notes});
+      saveEntries(getEntries());
+      var modal=document.querySelector('[style*="position:fixed"]');
+      if(modal)modal.remove();
+      toast('✅ Cash Flow updated','ok');
+      renderCFDash();
+    } else {
+      if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Save Changes';}
+      toast('Save failed: '+r.status,'err');
+    }
+  }catch(err){
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Save Changes';}
+    toast('Error: '+err.message,'err');
+  }
+}
+
+async function deleteSpecOrder(id){
+  if(!confirm('Delete this SPEC order permanently? This cannot be undone.')) return;
+  try{
+    await fetch(SB_URL+'/rest/v1/spec_orders?id=eq.'+encodeURIComponent(id),{
+      method:'DELETE',headers:sbHeaders({'Prefer':'return=minimal'})
+    });
+    SPEC_REMOTE_ORDERS=SPEC_REMOTE_ORDERS.filter(function(o){return o.id!==id;});
+    toast('✅ Order deleted','ok');
+    renderOwnerSPEC();
+  }catch(err){toast('Error: '+err.message,'err');}
+}
+
+function editSpecOrder(id){
+  var order=SPEC_REMOTE_ORDERS.find(function(o){return o.id===id;});
+  if(!order){toast('Order not found','err');return;}
+  var itemsHtml=(order.items||[]).map(function(it,i){
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;padding:8px;background:#FAF6F0;border-radius:9px;">'
+      +'<div style="flex:1;">'
+      +'<div style="font-size:12px;font-weight:700;">'+escH(it.name||'')+'</div>'
+      +'<div style="font-size:10px;color:#888;">'+escH(it.unit||'')+'</div>'
+      +'</div>'
+      +'<input type="number" id="eso-qty-'+i+'" value="'+(it.qty||0)+'" min="0" style="width:64px;border:1.5px solid var(--border);border-radius:7px;padding:6px;font-size:14px;font-weight:800;text-align:center;font-family:inherit;">'
+      +'</div>';
+  }).join('');
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow-y:auto;padding:16px;display:flex;align-items:flex-start;justify-content:center;';
+  d.innerHTML='<div style="background:#fff;border-radius:18px;padding:20px;width:100%;max-width:460px;margin:auto;">'
+    +'<div style="font-size:15px;font-weight:900;margin-bottom:2px;">✏️ Edit SPEC Order</div>'
+    +'<div style="font-size:11px;color:#888;margin-bottom:14px;">'+escH(order.date)+' · '+escH(order.branch)+(order.manager?' · '+escH(order.manager):'')+'</div>'
+    +'<div>'+itemsHtml+'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:14px;">'
+    +'<button onclick="saveSpecOrderEdit(\''+escH(id)+'\')" style="flex:1;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">💾 Save Changes</button>'
+    +'<button onclick="this.closest(\'[style*=fixed]\').remove()" style="flex:1;padding:12px;background:#F5F5F5;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Cancel</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+}
+
+async function saveSpecOrderEdit(id){
+  var order=SPEC_REMOTE_ORDERS.find(function(o){return o.id===id;});
+  if(!order){toast('Not found','err');return;}
+  var newItems=(order.items||[]).map(function(it,i){
+    var inp=document.getElementById('eso-qty-'+i);
+    return Object.assign({},it,{qty:inp?parseFloat(inp.value)||0:it.qty});
+  }).filter(function(it){return it.qty>0;});
+  var saveBtn=document.querySelector('[onclick*="saveSpecOrderEdit"]');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving...';}
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/spec_orders?id=eq.'+encodeURIComponent(id),{
+      method:'PATCH',headers:sbHeaders({'Prefer':'return=minimal'}),body:JSON.stringify({items:newItems})
+    });
+    if(r.ok||r.status===204){
+      order.items=newItems;
+      var modal=document.querySelector('[style*="position:fixed"]');
+      if(modal)modal.remove();
+      toast('✅ SPEC order updated','ok');
+      renderOwnerSPEC();
+    } else {
+      if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Save Changes';}
+      toast('Save failed: '+r.status,'err');
+    }
+  }catch(err){
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Save Changes';}
+    toast('Error: '+err.message,'err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 // OWNER DAILY REPORTS DASHBOARD
 // ══════════════════════════════════════════════════════════════
 function renderOwnerDailyReports(){
@@ -8153,7 +8383,9 @@ function renderOwnerDailyReports(){
     html+='<div style="text-align:right;">';
     html+='<div style="font-size:15px;font-weight:900;color:'+(profit>=0?'var(--g)':'var(--r)')+';">'+(profit>=0?'+':'')+f2(profit)+' PLN</div>';
     html+='<div style="font-size:10px;color:var(--dim);">profit</div></div>';
-    // Delete button
+    // Edit + Delete buttons
+    html+='<button data-eid="'+e.id+'" onclick="editDailyReport(this.dataset.eid)"'
+      +' style="background:#E3F2FD;border:1.5px solid #90CAF9;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:700;color:#1565C0;cursor:pointer;line-height:1.3;text-align:center;margin-right:4px;">✏️<br>Edit</button>';
     html+='<button data-eid="'+e.id+'" data-type="daily" onclick="deleteReport(this.dataset.eid,this.dataset.type,renderOwnerDailyReports)"'
       +' style="background:#FFF5F5;border:1.5px solid #FFCDD2;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:700;color:var(--r);cursor:pointer;line-height:1.3;text-align:center;">🗑️<br>Del</button>';
     html+='</div></div>';
@@ -9055,6 +9287,28 @@ async function renderOwnerSPEC(){
     html+='</div>';
   });
   if(!todayOrders.length)html+='<div style="text-align:center;padding:40px;color:var(--dim);background:#fff;border-radius:14px;"><div style="font-size:36px;margin-bottom:10px;">📭</div><div style="font-weight:700;">No orders today yet</div></div>';
+
+  // Recent orders with Edit / Delete
+  var recentOrds=SPEC_REMOTE_ORDERS.slice(0,60);
+  if(recentOrds.length){
+    html+='<div style="margin-top:16px;">'
+      +'<div style="font-size:10px;font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📋 Recent Orders — Edit / Delete</div>';
+    recentOrds.forEach(function(ord){
+      var total=( ord.items||[]).reduce(function(s,it){return s+(parseFloat(it.qty)||0);},0);
+      var meatItems=(ord.items||[]).filter(function(it){return /kurczak|baranina/i.test(it.name||'');});
+      html+='<div style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-sm);">'
+        +'<div style="flex:1;min-width:0;">'
+        +'<div style="font-size:12px;font-weight:800;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escH(ord.branch)+'</div>'
+        +'<div style="font-size:10px;color:var(--dim);">'+escH(ord.date)+' · '+ord.items.length+' items · '+total+' units'+(ord.manager?' · '+escH(ord.manager):'')+'</div>'
+        +(meatItems.length?'<div style="font-size:10px;color:#E65100;margin-top:2px;">'+meatItems.map(function(it){return escH(it.name)+' ×'+it.qty;}).join(' · ')+'</div>':'')
+        +'</div>'
+        +'<button data-oid="'+escH(ord.id)+'" onclick="editSpecOrder(this.dataset.oid)" style="background:#E3F2FD;border:1.5px solid #90CAF9;border-radius:8px;padding:6px 10px;font-size:10px;font-weight:700;color:#1565C0;cursor:pointer;line-height:1.3;text-align:center;flex-shrink:0;">✏️<br>Edit</button>'
+        +'<button data-oid="'+escH(ord.id)+'" onclick="deleteSpecOrder(this.dataset.oid)" style="background:#FFF5F5;border:1.5px solid #FFCDD2;border-radius:8px;padding:6px 10px;font-size:10px;font-weight:700;color:var(--r);cursor:pointer;line-height:1.3;text-align:center;flex-shrink:0;margin-left:4px;">🗑️<br>Del</button>'
+        +'</div>';
+    });
+    html+='</div>';
+  }
+
   cont.innerHTML=html;
 }
 
