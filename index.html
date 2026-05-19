@@ -2083,7 +2083,7 @@ function _doSubmitDR(){
       }).then(function(){toast('✅ Cash flow updated','ok');setTimeout(function(){loadEntriesFromSB(false);},2000);}).catch(function(){toast('Saved locally','');});
       _editingEntryId=null;_editingType=null;
       var b=document.getElementById('edit-mode-banner');if(b)b.remove();
-      var btn=el('dr-btn');if(btn){btn.textContent=t('submit_dr');btn.style.background='';}
+      var btn=el('dr-btn');if(btn){btn.textContent=t('submit_dr');btn.style.background='';btn.disabled=false;}
       resetDRForm();mNav(2);return;
     }
     // UPDATE daily entry
