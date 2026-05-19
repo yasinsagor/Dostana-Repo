@@ -5283,9 +5283,6 @@ function _renderPerformance(cont){
     +'<div><div style="font-size:22px;font-weight:900;">'+Math.round(avgRev/1000)+'k</div><div style="font-size:10px;opacity:.7;">Avg/Branch</div></div>'
     +'</div></div>';
 
-  // SPEC vs Sales AI section — placed here so it's visible without scrolling
-  html+='<div id="spec-sales-ai-section" style="margin-bottom:14px;"><div style="background:#F3E5F5;border:1.5px solid #CE93D8;border-radius:12px;padding:12px;text-align:center;color:#6A1B9A;font-size:12px;">⏳ Loading SPEC vs Sales data...</div></div>';
-
   // Branch cards
   var medals=['🥇','🥈','🥉'];
   scored.forEach(function(item,idx){
@@ -5388,15 +5385,19 @@ function _renderPerformance(cont){
       +'<td style="padding:3px 4px;color:#888;font-size:9px;">Add categories in Settings for breakdown</td></tr>':'');
       })()
       +'</table></div>'
+      // SPEC mini-section inline with this branch card
+      +'<div id="spec-mini-'+idx+'" style="margin-top:8px;border-top:1px solid rgba(0,0,0,0.08);padding-top:8px;">'
+      +'<div style="font-size:9px;color:#9C27B0;background:#F3E5F5;border-radius:6px;padding:4px 8px;text-align:center;">⏳ Loading SPEC procurement data…</div></div>'
       +'</div>';
   });
 
+  // AI opinion button area — shown after all cards once SPEC data loads
+  html+='<div id="spec-ai-chain-btn-area"></div>';
+
   cont.innerHTML=html;
 
-  // Async: load SPEC orders and render comparison vs sales
+  // Async: load SPEC orders and inject data into per-branch mini sections
   (async function(){
-    var specSect=document.getElementById('spec-sales-ai-section');
-    if(!specSect)return;
     try{
     await loadSpecOrders();
     var orders=getSpecOrders();
@@ -5407,7 +5408,7 @@ function _renderPerformance(cont){
     var specByBranch={};
     monthOrders.forEach(function(ord){
       var br=ord.branch;
-      if(!specByBranch[br])specByBranch[br]={orders:0,meat:{kurczak:0,baranina:0},totalQty:0,topItems:{}};
+      if(!specByBranch[br])specByBranch[br]={orders:0,meat:{kurczak:0,baranina:0},totalQty:0};
       var sb=specByBranch[br];
       sb.orders++;
       (ord.items||[]).forEach(function(it){
@@ -5415,21 +5416,20 @@ function _renderPerformance(cont){
         var nm=(it.name||'');
         if(/kurczak/i.test(nm))sb.meat.kurczak+=(parseFloat(it.qty)||0);
         else if(/baranina/i.test(nm))sb.meat.baranina+=(parseFloat(it.qty)||0);
-        if(nm)sb.topItems[nm]=(sb.topItems[nm]||0)+(parseFloat(it.qty)||0);
       });
     });
 
-    // Build chain summary for AI (uses closed-over scored + branchData)
+    // Build chain summary
     var chainSummary=[];
     scored.forEach(function(item,idx){
       var br=item.br,rev=item.d.revenue,specCost=item.d.spec;
-      var sb=specByBranch[br]||{orders:0,meat:{kurczak:0,baranina:0},totalQty:0,topItems:{}};
+      var sb=specByBranch[br]||{orders:0,meat:{kurczak:0,baranina:0},totalQty:0};
       var specPct=rev>0?specCost/rev*100:0;
       chainSummary.push({
-        branch:br,rank:idx+1,score:item.score,
+        idx:idx,branch:br,rank:idx+1,score:item.score,
         revenue:Math.round(rev),specCost:Math.round(specCost),
         specPct:specPct.toFixed(1),orders:sb.orders,
-        kurczak:sb.meat.kurczak,baranina:sb.meat.baranina,totalQty:sb.totalQty
+        kurczak:sb.meat.kurczak,baranina:sb.meat.baranina
       });
     });
     window._specSalesData=chainSummary;
@@ -5440,75 +5440,65 @@ function _renderPerformance(cont){
     var avgKPerKrev=withData.length?withData.reduce(function(a,s){return a+(s.kurczak/(s.revenue/1000));},0)/withData.length:0;
     var avgBPerKrev=withData.length?withData.reduce(function(a,s){return a+(s.baranina/(s.revenue/1000));},0)/withData.length:0;
 
-    // Render header
-    var shtml='<div style="background:linear-gradient(135deg,#4A148C,#7B1FA2);border-radius:12px;padding:14px;margin-bottom:12px;color:#fff;">'
-      +'<div style="font-size:10px;font-weight:800;opacity:.7;letter-spacing:1px;margin-bottom:4px;">📦 SPEC ORDERS vs SALES ANALYSIS</div>'
-      +'<div style="font-size:13px;font-weight:900;margin-bottom:2px;">'+mo[selM-1]+' '+selY+' · '+monthOrders.length+' orders · '+Object.keys(specByBranch).length+' branches ordering</div>'
-      +'<div style="font-size:10px;opacity:.75;">Procurement patterns vs actual revenue performance — tap AI Opinion for full chain analysis</div>'
-      +'</div>';
-
-    // Per-branch comparison cards
+    // Inject SPEC data into each branch card's mini section
     chainSummary.forEach(function(s){
+      var miniEl=document.getElementById('spec-mini-'+s.idx);
+      if(!miniEl)return;
       var hasOrders=s.orders>0;
       var kRatio=s.revenue>0&&s.kurczak>0?(s.kurczak/(s.revenue/1000)):0;
       var bRatio=s.revenue>0&&s.baranina>0?(s.baranina/(s.revenue/1000)):0;
       var kVsAvg=avgKPerKrev>0&&kRatio>0?(kRatio/avgKPerKrev):0;
       var bVsAvg=avgBPerKrev>0&&bRatio>0?(bRatio/avgBPerKrev):0;
-      var statusColor=s.score>=75?'#2E7D32':s.score>=50?'#E65100':'#C62828';
-      var medal=s.rank===1?'🥇':s.rank===2?'🥈':s.rank===3?'🥉':s.score>=75?'📈':'📉';
-
       var hints=[];
       if(!hasOrders){
-        hints.push({t:'warn',m:'⚠️ No SPEC orders recorded this month — confirm branch is submitting through the system'});
+        hints.push({t:'warn',m:'⚠️ No SPEC orders this month — confirm branch is submitting orders'});
       } else {
-        if(kVsAvg>1.3)hints.push({t:'warn',m:'🐓 Kurczak: ordering '+Math.round((kVsAvg-1)*100)+'% MORE per 1k revenue than chain avg — check for waste or portion drift'});
-        else if(kVsAvg>0&&kVsAvg<0.75)hints.push({t:'good',m:'🐓 Efficient Kurczak usage — '+Math.round((1-kVsAvg)*100)+'% less per 1k revenue than chain avg'});
-        if(bVsAvg>1.3)hints.push({t:'warn',m:'🐑 Baranina: ordering '+Math.round((bVsAvg-1)*100)+'% above chain avg per 1k revenue — review portions'});
-        else if(bVsAvg>0&&bVsAvg<0.75)hints.push({t:'good',m:'🐑 Efficient Baranina usage vs revenue'});
-        if(parseFloat(s.specPct)>5)hints.push({t:'info',m:'📊 SPEC cost '+s.specPct+'% of revenue — monitor for cost creep vs chain avg'});
-        if(s.score>=75&&kVsAvg>0&&kVsAvg<=1.15&&bVsAvg<=1.15)hints.push({t:'good',m:'✅ Meat ordering aligns well with sales performance — efficient procurement'});
+        if(kVsAvg>1.3)hints.push({t:'warn',m:'🐓 Kurczak '+Math.round((kVsAvg-1)*100)+'% above chain avg per 1k revenue — check waste/portions'});
+        else if(kVsAvg>0&&kVsAvg<0.75)hints.push({t:'good',m:'🐓 Efficient Kurczak — '+Math.round((1-kVsAvg)*100)+'% below chain avg'});
+        if(bVsAvg>1.3)hints.push({t:'warn',m:'🐑 Baranina '+Math.round((bVsAvg-1)*100)+'% above chain avg — review portions'});
+        else if(bVsAvg>0&&bVsAvg<0.75)hints.push({t:'good',m:'🐑 Efficient Baranina vs revenue'});
+        if(parseFloat(s.specPct)>5)hints.push({t:'info',m:'📊 SPEC cost '+s.specPct+'% of revenue'});
+        if(s.score>=75&&kVsAvg>0&&kVsAvg<=1.15&&bVsAvg<=1.15)hints.push({t:'good',m:'✅ Procurement aligned with sales performance'});
       }
-
-      shtml+='<div style="background:#fff;border:1.5px solid '+statusColor+'33;border-left:4px solid '+statusColor+';border-radius:12px;padding:12px;margin-bottom:8px;">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-        +'<div style="font-size:22px;">'+medal+'</div>'
-        +'<div style="flex:1;">'
-        +'<div style="font-size:12px;font-weight:900;color:'+statusColor+';">#'+s.rank+' '+s.branch+'</div>'
-        +'<div style="font-size:10px;color:#666;">'+Math.round(s.revenue/1000)+'k PLN revenue · Score '+s.score+'/100</div>'
-        +'</div></div>'
-        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;">'
-        +'<div style="background:#F3E5F5;border-radius:8px;padding:6px;text-align:center;">'
-        +'<div style="font-size:14px;font-weight:900;color:#7B1FA2;">'+s.orders+'</div>'
-        +'<div style="font-size:9px;color:#666;">Orders</div></div>'
-        +'<div style="background:#FFF3E0;border-radius:8px;padding:6px;text-align:center;">'
-        +'<div style="font-size:14px;font-weight:900;color:#E65100;">'+(s.kurczak||'—')+'</div>'
-        +'<div style="font-size:9px;color:#666;">🐓 Kurczak</div></div>'
-        +'<div style="background:#FFF8E1;border-radius:8px;padding:6px;text-align:center;">'
-        +'<div style="font-size:14px;font-weight:900;color:#F57F17;">'+(s.baranina||'—')+'</div>'
-        +'<div style="font-size:9px;color:#666;">🐑 Baranina</div></div>'
-        +'<div style="background:'+(parseFloat(s.specPct)>0?'#E8EAF6':'#F5F5F5')+';border-radius:8px;padding:6px;text-align:center;">'
-        +'<div style="font-size:14px;font-weight:900;color:'+(parseFloat(s.specPct)>0?'#3949AB':'#bbb')+';">'
+      var mhtml='<div style="font-size:9px;font-weight:800;color:#7B1FA2;margin-bottom:5px;letter-spacing:.5px;">📦 SPEC PROCUREMENT</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:6px;">'
+        +'<div style="background:#F3E5F5;border-radius:6px;padding:5px;text-align:center;">'
+        +'<div style="font-size:13px;font-weight:900;color:#7B1FA2;">'+(hasOrders?s.orders:'—')+'</div>'
+        +'<div style="font-size:8px;color:#666;">Orders</div></div>'
+        +'<div style="background:#FFF3E0;border-radius:6px;padding:5px;text-align:center;">'
+        +'<div style="font-size:13px;font-weight:900;color:#E65100;">'+(s.kurczak>0?s.kurczak:'—')+'</div>'
+        +'<div style="font-size:8px;color:#666;">🐓 Kurczak</div></div>'
+        +'<div style="background:#FFF8E1;border-radius:6px;padding:5px;text-align:center;">'
+        +'<div style="font-size:13px;font-weight:900;color:#F57F17;">'+(s.baranina>0?s.baranina:'—')+'</div>'
+        +'<div style="font-size:8px;color:#666;">🐑 Baranina</div></div>'
+        +'<div style="background:'+(parseFloat(s.specPct)>0?'#E8EAF6':'#F5F5F5')+';border-radius:6px;padding:5px;text-align:center;">'
+        +'<div style="font-size:13px;font-weight:900;color:'+(parseFloat(s.specPct)>0?'#3949AB':'#bbb')+';">'
         +(parseFloat(s.specPct)>0?s.specPct+'%':'—')+'</div>'
-        +'<div style="font-size:9px;color:#666;">SPEC cost%</div></div>'
+        +'<div style="font-size:8px;color:#666;">Cost%</div></div>'
         +'</div>'
         +hints.map(function(h){
           var bg=h.t==='good'?'#E8F5E9':h.t==='warn'?'#FFEBEE':'#E3F2FD';
           var clr=h.t==='good'?'#2E7D32':h.t==='warn'?'#C62828':'#1565C0';
-          return '<div style="font-size:10px;background:'+bg+';color:'+clr+';border-radius:6px;padding:6px 8px;margin-bottom:4px;">'+h.m+'</div>';
+          return '<div style="font-size:10px;background:'+bg+';color:'+clr+';border-radius:5px;padding:5px 7px;margin-bottom:3px;">'+h.m+'</div>';
         }).join('')
-        +(hints.length===0&&!hasOrders?'':(hints.length===0?'<div style="font-size:10px;color:#888;background:#F5F5F5;border-radius:6px;padding:6px 8px;">No significant ordering deviations detected for this branch</div>':''))
-        +'</div>';
+        +(hints.length===0&&hasOrders?'<div style="font-size:10px;color:#888;background:#F5F5F5;border-radius:5px;padding:5px 7px;">No procurement deviations detected</div>':'');
+      miniEl.innerHTML=mhtml;
     });
 
-    // AI opinion button
-    shtml+='<button id="spec-ai-btn" onclick="triggerSpecVsSalesAI()" '
-      +'style="width:100%;padding:14px;background:linear-gradient(135deg,#4A148C,#7B1FA2);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:4px;">'
-      +'🤖 Get Detailed AI Opinion — SPEC vs Sales</button>'
-      +'<div id="spec-ai-result" style="margin-top:10px;"></div>';
-
-    specSect.innerHTML=shtml;
+    // Chain-wide AI opinion button below all cards
+    var btnArea=document.getElementById('spec-ai-chain-btn-area');
+    if(btnArea){
+      btnArea.innerHTML='<button id="spec-ai-btn" onclick="triggerSpecVsSalesAI()" '
+        +'style="width:100%;padding:14px;background:linear-gradient(135deg,#4A148C,#7B1FA2);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:4px;">'
+        +'🤖 Get Detailed AI Opinion — Full Chain SPEC vs Sales</button>'
+        +'<div id="spec-ai-result" style="margin-top:10px;"></div>';
+    }
     }catch(err){
-      if(specSect) specSect.innerHTML='<div style="background:#FFEBEE;border-radius:12px;padding:12px;font-size:12px;color:#C62828;">⚠️ SPEC vs Sales: '+escH(err.message)+'</div>';
+      // On error, clear all loading placeholders with error message
+      scored.forEach(function(item,idx){
+        var miniEl=document.getElementById('spec-mini-'+idx);
+        if(miniEl)miniEl.innerHTML='<div style="font-size:10px;color:#C62828;background:#FFEBEE;border-radius:5px;padding:5px 7px;">⚠️ SPEC load failed: '+escH(err.message)+'</div>';
+      });
     }
   })();
 }
