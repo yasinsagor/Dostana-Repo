@@ -5382,7 +5382,198 @@ function _renderPerformance(cont){
       +'</div>';
   });
 
+  html+='<div id="spec-sales-ai-section" style="margin-top:16px;"></div>';
   cont.innerHTML=html;
+
+  // Async: load SPEC orders and render comparison vs sales
+  (async function(){
+    var specSect=document.getElementById('spec-sales-ai-section');
+    if(!specSect)return;
+    specSect.innerHTML='<div style="text-align:center;padding:16px;color:var(--dim);font-size:12px;">⏳ Loading SPEC order data...</div>';
+    await loadSpecOrders();
+    var orders=getSpecOrders();
+    var monthStr=selY+'-'+pad(selM);
+    var monthOrders=orders.filter(function(o){return(o.date||'').startsWith(monthStr);});
+
+    // Aggregate SPEC orders by branch
+    var specByBranch={};
+    monthOrders.forEach(function(ord){
+      var br=ord.branch;
+      if(!specByBranch[br])specByBranch[br]={orders:0,meat:{kurczak:0,baranina:0},totalQty:0,topItems:{}};
+      var sb=specByBranch[br];
+      sb.orders++;
+      (ord.items||[]).forEach(function(it){
+        sb.totalQty+=(parseFloat(it.qty)||0);
+        var nm=(it.name||'');
+        if(/kurczak/i.test(nm))sb.meat.kurczak+=(parseFloat(it.qty)||0);
+        else if(/baranina/i.test(nm))sb.meat.baranina+=(parseFloat(it.qty)||0);
+        if(nm)sb.topItems[nm]=(sb.topItems[nm]||0)+(parseFloat(it.qty)||0);
+      });
+    });
+
+    // Build chain summary for AI (uses closed-over scored + branchData)
+    var chainSummary=[];
+    scored.forEach(function(item,idx){
+      var br=item.br,rev=item.d.revenue,specCost=item.d.spec;
+      var sb=specByBranch[br]||{orders:0,meat:{kurczak:0,baranina:0},totalQty:0,topItems:{}};
+      var specPct=rev>0?specCost/rev*100:0;
+      chainSummary.push({
+        branch:br,rank:idx+1,score:item.score,
+        revenue:Math.round(rev),specCost:Math.round(specCost),
+        specPct:specPct.toFixed(1),orders:sb.orders,
+        kurczak:sb.meat.kurczak,baranina:sb.meat.baranina,totalQty:sb.totalQty
+      });
+    });
+    window._specSalesData=chainSummary;
+    window._specSalesMoYr=mo[selM-1]+' '+selY;
+
+    // Chain avg meat-per-1k-revenue ratios
+    var withData=chainSummary.filter(function(s){return s.revenue>0&&s.orders>0;});
+    var avgKPerKrev=withData.length?withData.reduce(function(a,s){return a+(s.kurczak/(s.revenue/1000));},0)/withData.length:0;
+    var avgBPerKrev=withData.length?withData.reduce(function(a,s){return a+(s.baranina/(s.revenue/1000));},0)/withData.length:0;
+
+    // Render header
+    var shtml='<div style="background:linear-gradient(135deg,#4A148C,#7B1FA2);border-radius:12px;padding:14px;margin-bottom:12px;color:#fff;">'
+      +'<div style="font-size:10px;font-weight:800;opacity:.7;letter-spacing:1px;margin-bottom:4px;">📦 SPEC ORDERS vs SALES ANALYSIS</div>'
+      +'<div style="font-size:13px;font-weight:900;margin-bottom:2px;">'+mo[selM-1]+' '+selY+' · '+monthOrders.length+' orders · '+Object.keys(specByBranch).length+' branches ordering</div>'
+      +'<div style="font-size:10px;opacity:.75;">Procurement patterns vs actual revenue performance — tap AI Opinion for full chain analysis</div>'
+      +'</div>';
+
+    // Per-branch comparison cards
+    chainSummary.forEach(function(s){
+      var hasOrders=s.orders>0;
+      var kRatio=s.revenue>0&&s.kurczak>0?(s.kurczak/(s.revenue/1000)):0;
+      var bRatio=s.revenue>0&&s.baranina>0?(s.baranina/(s.revenue/1000)):0;
+      var kVsAvg=avgKPerKrev>0&&kRatio>0?(kRatio/avgKPerKrev):0;
+      var bVsAvg=avgBPerKrev>0&&bRatio>0?(bRatio/avgBPerKrev):0;
+      var statusColor=s.score>=75?'#2E7D32':s.score>=50?'#E65100':'#C62828';
+      var medal=s.rank===1?'🥇':s.rank===2?'🥈':s.rank===3?'🥉':s.score>=75?'📈':'📉';
+
+      var hints=[];
+      if(!hasOrders){
+        hints.push({t:'warn',m:'⚠️ No SPEC orders recorded this month — confirm branch is submitting through the system'});
+      } else {
+        if(kVsAvg>1.3)hints.push({t:'warn',m:'🐓 Kurczak: ordering '+Math.round((kVsAvg-1)*100)+'% MORE per 1k revenue than chain avg — check for waste or portion drift'});
+        else if(kVsAvg>0&&kVsAvg<0.75)hints.push({t:'good',m:'🐓 Efficient Kurczak usage — '+Math.round((1-kVsAvg)*100)+'% less per 1k revenue than chain avg'});
+        if(bVsAvg>1.3)hints.push({t:'warn',m:'🐑 Baranina: ordering '+Math.round((bVsAvg-1)*100)+'% above chain avg per 1k revenue — review portions'});
+        else if(bVsAvg>0&&bVsAvg<0.75)hints.push({t:'good',m:'🐑 Efficient Baranina usage vs revenue'});
+        if(parseFloat(s.specPct)>5)hints.push({t:'info',m:'📊 SPEC cost '+s.specPct+'% of revenue — monitor for cost creep vs chain avg'});
+        if(s.score>=75&&kVsAvg>0&&kVsAvg<=1.15&&bVsAvg<=1.15)hints.push({t:'good',m:'✅ Meat ordering aligns well with sales performance — efficient procurement'});
+      }
+
+      shtml+='<div style="background:#fff;border:1.5px solid '+statusColor+'33;border-left:4px solid '+statusColor+';border-radius:12px;padding:12px;margin-bottom:8px;">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+        +'<div style="font-size:22px;">'+medal+'</div>'
+        +'<div style="flex:1;">'
+        +'<div style="font-size:12px;font-weight:900;color:'+statusColor+';">#'+s.rank+' '+s.branch+'</div>'
+        +'<div style="font-size:10px;color:#666;">'+Math.round(s.revenue/1000)+'k PLN revenue · Score '+s.score+'/100</div>'
+        +'</div></div>'
+        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;">'
+        +'<div style="background:#F3E5F5;border-radius:8px;padding:6px;text-align:center;">'
+        +'<div style="font-size:14px;font-weight:900;color:#7B1FA2;">'+s.orders+'</div>'
+        +'<div style="font-size:9px;color:#666;">Orders</div></div>'
+        +'<div style="background:#FFF3E0;border-radius:8px;padding:6px;text-align:center;">'
+        +'<div style="font-size:14px;font-weight:900;color:#E65100;">'+(s.kurczak||'—')+'</div>'
+        +'<div style="font-size:9px;color:#666;">🐓 Kurczak</div></div>'
+        +'<div style="background:#FFF8E1;border-radius:8px;padding:6px;text-align:center;">'
+        +'<div style="font-size:14px;font-weight:900;color:#F57F17;">'+(s.baranina||'—')+'</div>'
+        +'<div style="font-size:9px;color:#666;">🐑 Baranina</div></div>'
+        +'<div style="background:'+(parseFloat(s.specPct)>0?'#E8EAF6':'#F5F5F5')+';border-radius:8px;padding:6px;text-align:center;">'
+        +'<div style="font-size:14px;font-weight:900;color:'+(parseFloat(s.specPct)>0?'#3949AB':'#bbb')+';">'
+        +(parseFloat(s.specPct)>0?s.specPct+'%':'—')+'</div>'
+        +'<div style="font-size:9px;color:#666;">SPEC cost%</div></div>'
+        +'</div>'
+        +hints.map(function(h){
+          var bg=h.t==='good'?'#E8F5E9':h.t==='warn'?'#FFEBEE':'#E3F2FD';
+          var clr=h.t==='good'?'#2E7D32':h.t==='warn'?'#C62828':'#1565C0';
+          return '<div style="font-size:10px;background:'+bg+';color:'+clr+';border-radius:6px;padding:6px 8px;margin-bottom:4px;">'+h.m+'</div>';
+        }).join('')
+        +(hints.length===0&&!hasOrders?'':(hints.length===0?'<div style="font-size:10px;color:#888;background:#F5F5F5;border-radius:6px;padding:6px 8px;">No significant ordering deviations detected for this branch</div>':''))
+        +'</div>';
+    });
+
+    // AI opinion button
+    shtml+='<button id="spec-ai-btn" onclick="triggerSpecVsSalesAI()" '
+      +'style="width:100%;padding:14px;background:linear-gradient(135deg,#4A148C,#7B1FA2);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:4px;">'
+      +'🤖 Get Detailed AI Opinion — SPEC vs Sales</button>'
+      +'<div id="spec-ai-result" style="margin-top:10px;"></div>';
+
+    specSect.innerHTML=shtml;
+  })();
+}
+
+
+async function getSpecVsSalesAIOpinion(data,moYr){
+  var lines=data.map(function(s){
+    return 'Branch: '+s.branch+' | Rank: #'+s.rank+' | Score: '+s.score+'/100'
+      +' | Revenue: '+s.revenue+' PLN | SPEC orders placed: '+s.orders
+      +' | Kurczak ordered: '+s.kurczak+' units | Baranina ordered: '+s.baranina+' units'
+      +' | SPEC cashflow cost: '+s.specCost+' PLN ('+s.specPct+'% of revenue)';
+  });
+  var prompt='You are a senior restaurant chain analyst for Dostana Kebab in Poland. '
+    +'Analyze the SPEC (supply/procurement) orders vs actual sales data for '+moYr+'. '
+    +'Give a DETAILED analysis (6-10 sentences) covering:\n'
+    +'1) Which branches order efficiently relative to their sales volume?\n'
+    +'2) Any red flags — over-ordering or under-ordering patterns?\n'
+    +'3) Meat procurement efficiency (Kurczak and Baranina quantities vs revenue)?\n'
+    +'4) SPEC cost percentage concerns relative to revenue?\n'
+    +'5) Specific actionable recommendations for underperforming branches?\n'
+    +'Be specific with numbers. Write in clear English paragraphs. No bullet points.\n\n'
+    +'Chain data for '+moYr+':\n'+lines.join('\n');
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:700,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    var d=await resp.json();
+    if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text.trim();
+  }catch(e){}
+  return null;
+}
+
+function buildSpecVsSalesFallback(data,moYr){
+  var withOrders=data.filter(function(s){return s.orders>0&&s.revenue>0;});
+  var noOrders=data.filter(function(s){return s.orders===0;});
+  if(!withOrders.length)return 'No SPEC order data found for '+moYr+'. Ensure all branches are submitting orders through the SPEC system so procurement can be tracked against revenue.';
+  var parts=[];
+  var sorted=withOrders.slice().sort(function(a,b){return(b.revenue/Math.max(1,b.orders))-(a.revenue/Math.max(1,a.orders));});
+  var best=sorted[0],worst=sorted[sorted.length-1];
+  parts.push('For '+moYr+', '+withOrders.length+' of '+data.length+' branches placed SPEC orders through the system.');
+  if(best)parts.push(best.branch+' shows the best revenue-to-order ratio at approx. '+Math.round(best.revenue/best.orders/1000)+'k PLN revenue per order cycle ('+best.orders+' orders, '+Math.round(best.revenue/1000)+'k PLN total revenue).');
+  if(worst&&worst.branch!==best.branch)parts.push(worst.branch+' ordered '+worst.orders+' times generating '+Math.round(worst.revenue/1000)+'k PLN — review whether order frequency matches actual consumption to avoid excess stock.');
+  var highSpec=data.filter(function(s){return parseFloat(s.specPct)>4&&s.revenue>0;});
+  if(highSpec.length)parts.push('Elevated SPEC cost percentage: '+highSpec.map(function(s){return s.branch+' at '+s.specPct+'%';}).join(', ')+' — compare with supplier invoices and check for duplicate or unrecorded cashflow entries.');
+  if(noOrders.length)parts.push(noOrders.length+' branch'+(noOrders.length>1?'es':'')+' had no recorded SPEC orders this period: '+noOrders.map(function(s){return s.branch;}).join(', ')+' — confirm they are using the ordering system or ordering was done outside it.');
+  return parts.join(' ');
+}
+
+async function triggerSpecVsSalesAI(){
+  var btn=document.getElementById('spec-ai-btn');
+  var result=document.getElementById('spec-ai-result');
+  if(!result)return;
+  if(btn){btn.disabled=true;btn.textContent='🤖 Analyzing procurement vs sales...';}
+  result.innerHTML='<div style="background:#F3E5F5;border:1px solid #CE93D8;border-radius:12px;padding:16px;text-align:center;color:#6A1B9A;font-size:12px;">⏳ AI is analyzing SPEC ordering patterns vs sales performance...</div>';
+  var data=window._specSalesData||[];
+  var moYr=window._specSalesMoYr||'this period';
+  if(!data.length){
+    result.innerHTML='<div style="background:#FFEBEE;border-radius:12px;padding:12px;font-size:12px;color:#C62828;">No data available for AI analysis — select a month with both sales and SPEC order data.</div>';
+    if(btn){btn.disabled=false;btn.textContent='🤖 Get Detailed AI Opinion — SPEC vs Sales';}
+    return;
+  }
+  var opinion=await getSpecVsSalesAIOpinion(data,moYr);
+  var bodyHtml=opinion
+    ?'<div style="font-size:12px;color:#1A237E;line-height:1.8;">'+opinion.replace(/\n\n/g,'</p><p style="margin:8px 0 0;">').replace(/\n/g,'<br>')+'</div>'
+    :'<div style="font-size:12px;color:#4A148C;line-height:1.8;">'+buildSpecVsSalesFallback(data,moYr)+'</div>';
+  result.innerHTML='<div style="background:linear-gradient(135deg,#F3E5F5,#EDE7F6);border:1.5px solid #CE93D8;border-radius:12px;padding:16px;">'
+    +'<div style="font-size:11px;font-weight:900;color:#4A148C;margin-bottom:10px;letter-spacing:.5px;">'
+    +(opinion?'🤖 AI ANALYSIS':'📊 SPEC vs SALES ANALYSIS')+' — SPEC ORDERS vs SALES · '+moYr+'</div>'
+    +bodyHtml+'</div>';
+  if(btn){btn.disabled=false;btn.textContent='🔄 Refresh AI Opinion';}
 }
 
 
